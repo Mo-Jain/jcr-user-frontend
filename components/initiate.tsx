@@ -21,12 +21,13 @@ const Initiate = () => {
   const { isServerLoading, setIsServerLoading,isInitiateComplete } = useServerStore();
   const pathname = usePathname();
   const {setFavoriteCars} = useFavoriteStore();
-  const {setCars} = useCarStore();
+  const {setCars,setIsCarLoading} = useCarStore();
   useEffect(() => {
     const fetchData = async () => {
       if( pathname.includes("/test")) return;
       try {
         setIsLoading(true);
+        setIsCarLoading(true);
           setIsServerLoading(true);
           const res = await axios.get(`${BASE_URL}/api/v1/customer/me`, {
             headers: {
@@ -46,7 +47,7 @@ const Initiate = () => {
             },
           });
           setCars(res1.data.cars);
-
+          setIsCarLoading(false);
           const res2 = await axios.get(`${BASE_URL}/api/v1/customer/favorite-cars`, {
               headers: {
                 authorization: `Bearer ` + localStorage.getItem("token"),
@@ -56,8 +57,8 @@ const Initiate = () => {
           setIsServerLoading(false);
       } catch (error) {
           console.log(error);
-          router.push('/auth')
           setIsServerLoading(false);
+          setIsCarLoading(false);
       }
     };
     fetchData();

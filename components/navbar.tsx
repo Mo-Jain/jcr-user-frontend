@@ -5,7 +5,7 @@ import LogoText from "@/public/logo_text.svg";
 import { usePathname, useRouter } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 import { useCallback, useEffect, useState } from "react";
-import { useUserStore } from "@/lib/store";
+import { useLoginStore, useUserStore } from "@/lib/store";
 import Redirect from "./redirect";
 import Image from "next/image";
 import { useMediaQuery } from "react-responsive";
@@ -16,6 +16,7 @@ export function NavBar() {
   const router = useRouter();
   const { name, imageUrl } = useUserStore();
   const isSmallScreen = useMediaQuery({ maxWidth: 640 });
+  const {setIsSignUp} = useLoginStore();
   const gethortName = useCallback(() => {
     if (!name) return;
     const nameArray = name.trim().split(" ");
@@ -72,10 +73,24 @@ export function NavBar() {
           </div>
         </div>
         {!name ? (
-          <div className="py-2">
+          <div className="py-2 flex items-center gap-2">
             <div
+            style={{fontFamily:'sans-serif'}}
               className="w-full font-bold select-none text-zinc-700 dark:text-gray-200 cursor-pointer hover:text-blue-700 hover:dark:text-blue-700"
-              onClick={() => router.push("/auth")}
+              onClick={() =>{
+                setIsSignUp(true);
+                router.push("/auth")
+              }}
+            >
+              Signup
+            </div>
+            <div
+            style={{fontFamily:'sans-serif'}}
+              className="w-full font-bold select-none text-zinc-700 dark:text-gray-200 cursor-pointer hover:text-blue-700 hover:dark:text-blue-700"
+              onClick={() => {
+                setIsSignUp(false);
+                router.push("/auth")
+              }}
             >
               Login
             </div>

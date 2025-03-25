@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import axios from "axios";
 import { BASE_URL } from "@/lib/config";
-import {  useUserStore } from "@/lib/store";
+import {  useLoginStore, useUserStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 
@@ -30,7 +30,7 @@ export default function LoginPage() {
   const [contact,setContact] = useState("");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const {isSignUp,setIsSignUp} = useLoginStore();
 
   useEffect(()=>{
     if(name){

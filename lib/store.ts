@@ -47,6 +47,13 @@ interface FavoriteStore {
 interface CarStore {
   cars: Car[];
   setCars: (value: Car[]) => void;
+  isCarLoading:boolean;
+  setIsCarLoading: (value: boolean) => void;
+}
+
+interface LoginStore {
+  isSignUp: boolean;
+  setIsSignUp: (value: boolean) => void;
 }
 
 interface FilteredCarStore {
@@ -158,6 +165,10 @@ export const useCarStore = create<CarStore>()(
         setCars: (value: Car[]) => {
           set({ cars: value });
         },
+        isCarLoading:false,
+        setIsCarLoading: (value: boolean) => {
+          set({ isCarLoading: value });
+        },
       }),
       { name: "car_data", skipHydration: true },
     ),
@@ -178,6 +189,20 @@ export const useFilteredCarStore = create<FilteredCarStore>()(
         },
       }),
       { name: "car_data", skipHydration: true },
+    ),
+  ),
+);
+
+export const useLoginStore = create<LoginStore>()(
+  devtools(
+    persist(
+      (set) => ({
+        isSignUp: false,
+        setIsSignUp: (value: boolean) => {
+          set({ isSignUp: value });
+        },
+      }),
+      { name: "login_data", skipHydration: true },
     ),
   ),
 );

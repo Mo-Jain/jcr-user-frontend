@@ -9,21 +9,24 @@ import UserIcon from "@/public/user.svg";
 import Policy from "@/public/policy.svg";
 import Shield from "@/public/shield1.svg";
 import ContactUs from "@/public/contact-us.svg";
-import { useUserStore } from "@/lib/store";
+import { useCarStore, useFavoriteStore, useUserStore } from "@/lib/store";
 import { Star } from "lucide-react";
 
 
 export default function Profile() {
   const router = useRouter();
   const { name, imageUrl, setName, setImageUrl,setUserId,kycStatus } = useUserStore();
-
+  const {setCars} = useCarStore();
+  const {setFavoriteCars} = useFavoriteStore();
 
   const handleLogout = () => {
     localStorage.setItem("token", "");
     setName("");
     setImageUrl("");
     setUserId(-1);
-    router.push("/");
+    setCars([]);
+    setFavoriteCars([]);
+    router.push("/")
   };
 
   return (

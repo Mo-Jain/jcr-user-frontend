@@ -4,6 +4,8 @@ import { CarCard } from "./car-card";
 import Link from "next/link";
 import {  useCarStore, useFilteredCarStore, useSearchStore, useUserStore } from "@/lib/store";
 import CarIcon from "@/public/car-icon.svg";
+import Delivery from "@/public/delivery.svg";
+import CoinStack from "@/public/coin-stack.svg";
 import ArrowRight from "@/public/right_arrow.svg";
 import FlexLayoutCars from "./flex-layout-cars";
 import LoadingScreen from "./loading-screen";
@@ -11,7 +13,7 @@ import Loader from "./loader";
 
 export function CarSection() {
   const { name } = useUserStore();
-  const {cars} = useCarStore();
+  const {cars,isCarLoading} = useCarStore();
   const {isSearching} = useSearchStore();
   const {startDate,endDate,startTime,endTime} = useSearchStore();
   const {filteredCars,isLoading} = useFilteredCarStore();
@@ -25,7 +27,7 @@ export function CarSection() {
     });
   }
 
-  if(!cars || cars.length === 0 ) 
+  if(isCarLoading ) 
     return <LoadingScreen/>;
 
   return (
@@ -102,6 +104,20 @@ export function CarSection() {
                 <h3 className="text-xl font-semibold mb-2">Easy Booking</h3>
                 <p className="text-muted-foreground">
                   Book your desired car with just a few clicks.
+                </p>
+              </div>
+              <div className="flex flex-col items-center bg-card p-6 rounded-lg shadow-md">
+                <Delivery className="w-28 h-12 stroke-primary fill-primary mb-4 mb-4 stroke-[6px]" />
+                <h3 className="text-xl font-semibold mb-2">Home delivery</h3>
+                <p className="text-muted-foreground">
+                  Get you car delivered to your home.
+                </p>
+              </div>
+              <div className="flex flex-col items-center bg-card p-6 rounded-lg shadow-md">
+                <CoinStack className="w-28 h-12 fill-primary mb-4 mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Reduced Costs</h3>
+                <p className="text-muted-foreground">
+                  No middleman to increase cost, the cars are owned by us
                 </p>
               </div>
             </div>

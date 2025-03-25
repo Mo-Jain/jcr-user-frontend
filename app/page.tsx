@@ -129,22 +129,22 @@ export default function Home() {
           <FavoriteSection/>
         </div>
       </main>
-      <div className="bg-white  bg-opacity-40 dark:bg-opacity-20 backdrop-blur-lg flex flex-col items-center px-4 text-muted-foreground py-4">
+      <div className="bg-white text-xs  bg-opacity-40 dark:bg-opacity-20 backdrop-blur-lg flex flex-col items-center px-4 text-muted-foreground py-4">
         <div className=" text-center">
           <p>&copy; 2025 Jain Car Rentals. All rights reserved.</p>
         </div>
-        <div className="flex justify-around w-full mt-2 items-center gap-2">
+        <div className="flex justify-around w-full mt-2 text-muted-foreground items-center gap-2">
           <Link
             href="/terms-and-conditions"
             target="_blank"
-            className="text-center text-sm cursor-pointer text-black dark:text-white"
+            className="text-center text-xs cursor-pointer hover:text-black dark:hover:text-white text-muted-foreground"
           >
             <p>Terms and Conditions</p>
           </Link>
           <Link
             href="/contact-us"
             target="_blank"
-            className="text-center text-sm cursor-pointer text-black dark:text-white"
+            className="text-center text-xs cursor-pointer hover:text-black dark:hover:text-white text-muted-foreground"
           >
             <p>Contact us</p>
           </Link>

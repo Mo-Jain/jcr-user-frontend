@@ -173,16 +173,16 @@ export const TopSection = ({opacity}:{opacity:number}) => {
               </div>
             </div>
           :
-            <div className=" mx-auto py-12 sm:py-16">
+            <div className="mx-auto py-12 sm:py-16">
               <h1
-                  className="sm:text-4xl text-2xl font-bold [text-shadow:_0_8px_8px_rgb(103_103_110_/_0.8)] text-gray-900 dark:text-gray-200 mb-4"
+                  className="sm:text-4xl text-center w-full text-2xl font-bold [text-shadow:_0_8px_8px_rgb(103_103_110_/_0.8)] text-gray-900 dark:text-gray-200 mb-4"
                   style={{ fontFamily: "var(--font-alma), sans-serif" }}
                 >
                   Drive Hassle-Free!
                 </h1>
                 <p 
                 style={{ fontFamily: "var(--font-alma), sans-serif" }}
-                className="sm:text-lg text-xs mb-6 text-gray-500 dark:text-gray-400">
+                className="sm:text-lg text-xs mb-6 text-center w-full text-gray-500 dark:text-gray-400">
                   Skip the hassle—rent a car online and get it delivered to your door.
                 </p>
                   <div className="flex justify-center items-center bg-transparent">
