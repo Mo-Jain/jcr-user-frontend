@@ -18,8 +18,9 @@ import { BASE_URL } from "@/lib/config";
 import {  useLoginStore, useUserStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
+import Initiate from "@/components/initiate";
 
-export default function LoginPage() {
+export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +32,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const {isSignUp,setIsSignUp} = useLoginStore();
+  const [shouldInitiate, setShouldInitiate] = useState(false);
 
   useEffect(()=>{
     if(name){
@@ -42,6 +44,7 @@ export default function LoginPage() {
     event.preventDefault();
     setIsLoading(true);
     try{
+      let res;
       if(isSignUp){
         if(!firstName || !lastName || !contact || !password){
           toast({
@@ -49,7 +52,7 @@ export default function LoginPage() {
           })
           return;
         }
-        const res = await axios.post(`${BASE_URL}/api/v1/customer/signup`, {
+        res = await axios.post(`${BASE_URL}/api/v1/customer/signup`, {
           name: firstName.trim() + " " + lastName.trim(),
           contact: contact.trim(),
           password: password.trim(),
@@ -59,12 +62,9 @@ export default function LoginPage() {
             "Content-type": "application/json",
           },
         });
-        localStorage.setItem("token", res.data.token);
         toast({
           title: "Signup successful"
         })
-        setName(res.data.name);
-        router.push('/');
       }else{
         if(!username || !password){
           toast({
@@ -72,7 +72,7 @@ export default function LoginPage() {
           })
           return;
         }
-        const res = await axios.post(`${BASE_URL}/api/v1/customer/signin`, 
+        res = await axios.post(`${BASE_URL}/api/v1/customer/signin`, 
           {
             username: username,
             password: password,
@@ -82,13 +82,17 @@ export default function LoginPage() {
               "Content-type": "application/json",
             },
           });
-        localStorage.setItem("token", res.data.token);
-        toast({
-          title: "Login successful"
-        })
-        setName(res.data.name);
-        router.push('/');
+          toast({
+            title: "Login successful"
+          })
       }
+      localStorage.setItem("token", res.data.token);
+      toast({
+        title: "Login successful"
+      })
+      setName(res.data.name);
+      router.push('/');
+      setShouldInitiate(true);
     }
     catch(error){
       toast({
@@ -97,6 +101,8 @@ export default function LoginPage() {
       console.error("error",error)
     }
   };
+
+  if(shouldInitiate) return <Initiate/>;
 
   return (
     <div className="h-screen bg-white/30 dark:bg-black/30 backdrop-blur-lg flex items-center justify-center p-4">

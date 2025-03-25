@@ -117,7 +117,7 @@ export function CarSection() {
                 <CoinStack className="w-28 h-12 fill-primary mb-4 mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Reduced Costs</h3>
                 <p className="text-muted-foreground">
-                  No middleman to increase cost, the cars are owned by us
+                  No middleman to increase cost, the cars are owned by us.
                 </p>
               </div>
             </div>
