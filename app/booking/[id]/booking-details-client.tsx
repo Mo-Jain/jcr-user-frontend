@@ -152,7 +152,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   };
 
   return (
-    <div className="pt-12">
+    <div className="pt-16 sm:pt-12">
       
       <div className="flex pt-2 items-center justify-between px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white">
         <div

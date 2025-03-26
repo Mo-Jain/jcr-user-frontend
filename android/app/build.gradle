@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "in.jaincarrental.admin"
+    namespace "in.jaincarrental.www"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "in.jaincarrental.admin"
+        applicationId "in.jaincarrental.www"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -76,6 +76,7 @@ export function AddBookingDialog({
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [buttonText, setButtonText] = useState<"Book Now" | "Not available" | "Checking availability" | "Please wait">("Book Now");
 
   useEffect(() => {
     const cost = calculateCost(newStartDate, newEndDate, newStartTime, newEndTime, car.price);
@@ -113,6 +114,71 @@ export function AddBookingDialog({
     return Object.keys(newErrors).length === 0;
   };
 
+  useEffect(() => {
+    const checkCarAvailability = async () => {
+      if(!isOpen) return;
+      if(!newStartDate || !newEndDate || !newStartTime || !newEndTime) return;
+      if(newStartDate.getTime() > newEndDate.getTime()) {
+        toast({
+          description: "Start date should be before end date",
+          className:
+            "text-black bg-white border-0 rounded-md shadow-mg shadow-black/5 font-normal",
+          variant: "destructive",
+          duration: 2000,
+        });
+        return;
+      }
+      if(newStartDate.getTime() === newEndDate.getTime() && new Date(newStartTime).getTime() >= new Date(newEndTime).getTime()) {;
+        toast({
+          description: "Start date should be before end date",
+          className:
+            "text-black bg-white border-0 rounded-md shadow-mg shadow-black/5 font-normal",
+          variant: "destructive",
+          duration: 2000,
+        });
+        return;
+      }
+      setIsLoading(true);
+      setButtonText("Checking availability");
+      try {
+        const response = await axios.put(`${BASE_URL}/api/v1/car/availability/${car.id}`,{
+          startDate:newStartDate.toLocaleDateString("en-US"),
+          endDate:newEndDate.toLocaleDateString("en-US"),
+          startTime:newStartTime,
+          endTime:newEndTime,
+        },{
+          headers: {
+            "Content-type": "application/json",
+            authorization: `Bearer ` + localStorage.getItem("token"),
+          },
+        }
+      );
+        if (response.data.isAvailable) {
+          setButtonText("Book Now");
+        } else {
+          setButtonText("Not available");
+        }
+      } catch (error) {
+        console.log(error);
+        toast({
+          description: "Something went wrong",
+          className:
+            "text-black bg-white border-0 rounded-md shadow-mg shadow-black/5 font-normal",
+          variant: "destructive",
+          duration: 2000,
+        });
+        setNewStartDate(startDate);
+        setNewStartTime(convertTime(startTime));
+        setNewEndDate(endDate ? endDate : startDate);
+        setNewEndTime(convertTime(endTime));
+        setIsLoading(false);
+        setButtonText("Book Now");
+      }
+      setIsLoading(false);
+    }
+    checkCarAvailability();
+  }, [newStartDate, newStartTime, newEndDate, newEndTime, startDate, startTime, endDate, endTime]);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validateDate()) {
@@ -140,6 +206,7 @@ export function AddBookingDialog({
       return;
     }
     setIsLoading(true);
+    setButtonText("Please wait")
     try {
       const res = await axios.post(
         `${BASE_URL}/api/v1/customer/booking`,
@@ -180,7 +247,7 @@ export function AddBookingDialog({
     }
   };
 
-  const handleDateChange = (type: string) => {
+  const handleDateChange = async(type: string) => {
     if (type === "start") {
       setErrors((prev) => ({ ...prev, startDate: "" }));
     } else if (type === "end") {
@@ -294,12 +361,12 @@ export function AddBookingDialog({
             <div className="flex items-center gap-2 sm:gap-4">
               <Button
                 onClick={handleSubmit}
-                disabled={isLoading}
-                className={`bg-blue-600 active:scale-95 dark:text-white hover:bg-opacity-80 w-full ${isLoading && "cursor-not-allowed opacity-50"}`}
+                disabled={buttonText !== "Book Now"}
+                className={`bg-blue-600 active:scale-95 dark:text-white hover:bg-opacity-80 w-full disabled:bg-opacity-50 disabled:cursor-not-allowed`}
               >
                 {isLoading ? (
                   <>
-                    <span>Please wait</span>
+                    <span>{buttonText}</span>
                     <div className="flex items-end py-1 h-full">
                       <span className="sr-only">Loading...</span>
                       <div className="h-1 w-1 bg-white mx-[2px] border-border rounded-full animate-bounce [animation-delay:-0.3s]"></div>
@@ -308,7 +375,7 @@ export function AddBookingDialog({
                     </div>
                   </>
                 ) : (
-                  <span>Book Now</span>
+                  <span>{buttonText}</span>
                 )}
               </Button>
               <Button

@@ -1,4 +1,4 @@
-package in.jaincarrental.admin;
+package in.jaincarrental.www;
 
 import com.getcapacitor.BridgeActivity;
 
