@@ -133,7 +133,7 @@ export default function Home() {
         <div className=" text-center">
           <p>&copy; 2025 Jain Car Rentals. All rights reserved.</p>
         </div>
-        <div className="flex justify-around w-full mt-2 text-muted-foreground items-center gap-2">
+        <div className="flex relative justify-around w-full mt-2 text-muted-foreground items-center gap-2">
           <Link
             href="/terms-and-conditions"
             target="_blank"
@@ -148,16 +148,17 @@ export default function Home() {
           >
             <p>Contact us</p>
           </Link>
-        </div>
-        <div
-        className="text-end text-xs self-end cursor-pointer text-gray-400 dark:text-gray-500"
-        >
-          <p>
-            Desgined and developed
-          </p>
-          <p>
-            Mohit Jain
-          </p>
+          <div className="w-8 h-4"/>
+          <div
+          className="text-end absolute right-0 bottom-0 text-xs cursor-pointer text-gray-400 dark:text-gray-500"
+          >
+            <p>
+              Desgined and developed
+            </p>
+            <p>
+              Mohit Jain
+            </p>
+          </div>
         </div>
         
       </div>

@@ -261,6 +261,8 @@ export function CarDetailsClient({ carId }: { carId: number }) {
                       <span className="font-medium">{car.fuel[0].toUpperCase() + car.fuel.slice(1)}</span>
                       <p className="text-sm text-blue-500 mb-1">Seats</p>
                       <span className="font-medium">{car.seats}</span>
+                      <p className="text-sm text-blue-500 mb-1">Tranmission</p>
+                      <span className="font-medium">{car.gear[0].toUpperCase() + car.gear.slice(1)}</span>
                     </div>
                   </div>
                 </div>

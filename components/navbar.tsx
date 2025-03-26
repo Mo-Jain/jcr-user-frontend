@@ -14,7 +14,7 @@ export function NavBar() {
   const [selectedTab, setSelectedTab] = useState("home");
   const pathname = usePathname();
   const router = useRouter();
-  const { name, imageUrl } = useUserStore();
+  const { name, imageUrl,userId } = useUserStore();
   const isSmallScreen = useMediaQuery({ maxWidth: 640 });
   const {setIsSignUp} = useLoginStore();
   const gethortName = useCallback(() => {
@@ -43,6 +43,8 @@ export function NavBar() {
       setSelectedTab("cars");
     } else if (pathname === "/") {
       setSelectedTab("home");
+    } else if (pathname === "/test") {
+      setSelectedTab("test");
     }
   }, [pathname]);
 
@@ -73,9 +75,10 @@ export function NavBar() {
           </div>
         </div>
         {!name ? (
-          <div className="py-2 flex items-center gap-2">
+          <div
+          style={{ fontFamily: "var(--font-xova), sans-serif" }} 
+          className="py-2 flex items-center gap-2">
             <div
-            style={{fontFamily:'sans-serif'}}
               className="w-full font-bold select-none text-zinc-700 dark:text-gray-200 cursor-pointer hover:text-blue-700 hover:dark:text-blue-700"
               onClick={() =>{
                 setIsSignUp(true);
@@ -85,7 +88,6 @@ export function NavBar() {
               Signup
             </div>
             <div
-            style={{fontFamily:'sans-serif'}}
               className="w-full font-bold select-none text-zinc-700 dark:text-gray-200 cursor-pointer hover:text-blue-700 hover:dark:text-blue-700"
               onClick={() => {
                 setIsSignUp(false);
@@ -106,6 +108,14 @@ export function NavBar() {
               >
                 Home
               </div>
+              {userId===80 &&
+              <div
+                className={`px-2 hover:text-blue-700 dark:hover:text-blue-500 ${selectedTab == "test" ? "text-blue-700 border-b-blue-700 dark:text-blue-500 dark:border-b-blue-500" : ""} border-transparent transition-all border duration-300 border-y-4 p-1 cursor-pointer font-bold`}
+                onClick={() => router.push("/test")}
+              >
+                Test
+              </div>
+              }
               <div
                 className={`px-2 hover:text-blue-700 dark:hover:text-blue-500 ${selectedTab == "bookings" ? "text-blue-700 border-b-blue-700 dark:text-blue-500 dark:border-b-blue-500" : ""} border-transparent transition-all border duration-300 border-y-4 p-1 cursor-pointer font-bold`}
                 onClick={() => router.push("/bookings")}

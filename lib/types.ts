@@ -9,6 +9,7 @@ export type Car = {
   fuel:string;
   favorite:boolean;
   photos:string[];
+  gear:string;
 };
 
 export type CalendarEventType = {

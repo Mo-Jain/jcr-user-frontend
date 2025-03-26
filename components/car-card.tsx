@@ -157,7 +157,7 @@ export function CarCard({ car,flexlayout}: {
           <div 
           ref={scrollRef}
           className={cn("relative border px-1 border-black/10 dark:border-white/15 bg-black/5 dark:bg-white/10 rounded-lg z-0 flex-shrink-0 h-24 sm:h-48",
-            flexlayout && "min-w-[150px] max-sm:px-1 sm:min-w-[238px]",
+            flexlayout && "w-[150px] max-sm:px-1 sm:w-[238px]",
           )}>
             {previewImage &&
             <Image
@@ -165,7 +165,7 @@ export function CarCard({ car,flexlayout}: {
               alt={car.brand + " " + car.model}
               fill
               style={{ objectFit: "cover" }}
-              className="rounded-lg h-fit max-w-full max-h-full object-cover"
+              className="rounded-lg h-fit max-w-full max-h-full object-contain"
             />}
               {car.photos && car.photos.length > 1 &&
               <>
@@ -199,21 +199,27 @@ export function CarCard({ car,flexlayout}: {
               className="max-w-full whitespace-wrap">{(car.brand + " " + car.model).toLocaleUpperCase()}</span>
             </h3>
             <div className="w-full">
-              <div className="flex items-center max-sm:mb-1">
-                <IndianRupee className="h-4 w-4"/>
-                <span>{car.price}/day </span>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="flex items-center max-sm:mb-1">
+                  <IndianRupee className="h-4 w-4 flex-shrink-0"/>
+                  <span className="w-full text-center">{car.price}/day </span>
+                </div>
+                <div/>
+                <span className="w-full text-center">{car.gear[0].toUpperCase() + car.gear.slice(1)}</span>
               </div>
-              <div className="flex justify-between items-center w-full">
-                <div>
-                  <span className="ml-1">{car.seats} Seats</span>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                <div className="w-full flex items-center">
+                  <span className="">{car.seats} Seats</span>
                 </div>
                 <div 
                 onClick = {handleBookClick}
                 style={{ fontFamily: "var(--font-bigjohnbold), sans-serif" }}
-                className="text-xs sm:text-sm px-3 py-1  text-white active:scale-[0.95] bg-blue-400 rounded-full">Book</div>
-                <Star 
-                onClick={(e) => handleFavoriteClick(e)}
-                className={`h-4 w-4 ${car.favorite && "stroke-blue-400 fill-blue-400"}`} />
+                className="text-xs sm:text-sm py-1  text-center text-white active:scale-[0.95] bg-blue-400 rounded-full">Book</div>
+                <div className="w-full flex items-center justify-center">
+                  <Star 
+                  onClick={(e) => handleFavoriteClick(e)}
+                  className={`h-4 w-4 ${car.favorite && "stroke-blue-400 fill-blue-400"}`} />
+                </div>
               </div>
             </div>
           </div>
