@@ -131,7 +131,7 @@ export default function AuthPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <div className="relative">
+                  <div style={{fontFamily:"sans-serif"}} className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
@@ -206,7 +206,7 @@ export default function AuthPage() {
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="flex items-center gap-2">
-                    <div className="relative">
+                    <div style={{fontFamily:"inter"}} className="relative">
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}

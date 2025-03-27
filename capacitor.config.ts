@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'JCR',
   webDir: 'public',
   server: {
-    url: 'https://carbook-user-frontend.vercel.app', // Change this to your live URL
+    url: 'https://carbook-user-frontend.vercel.app', 
     cleartext: true // Allow HTTP for testing
   }
 };
