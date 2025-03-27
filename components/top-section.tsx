@@ -75,7 +75,6 @@ export const TopSection = ({opacity}:{opacity:number}) => {
       })
       return;
     };
-    setIsSearching(true);
     const scrollY = window.scrollY;
     const end = isSmallScreen ? 110 : 130;
     const duration = 200 * (200 - scrollY) / end;
@@ -86,12 +85,13 @@ export const TopSection = ({opacity}:{opacity:number}) => {
       const end = endDate.toDateString()
       const newStartTime = convertTime(startTime);
       const newEndTime = convertTime(endTime);
-      const res =  await axios.get(`${BASE_URL}/api/v1/customer/filtered-cars?startDate=${start}&endDate=${end}&startTime=${newStartTime}&endTime=${newEndTime}`,{
-                      headers: {
-                        'Content-type': 'application/json',
-                        authorization: ` Bearer ${localStorage.getItem("token")}`
-                      }
-                    })
+      const res =  await axios.get(`${BASE_URL}/api/v1/customer/filtered-cars?startDate=${start}&endDate=${end}&startTime=${newStartTime}&endTime=${newEndTime}&user=customer`,{
+            headers: {
+              'Content-type': 'application/json',
+              authorization: ` Bearer ${localStorage.getItem("token")}`
+            }
+          })
+      setIsSearching(true);
       setFilteredCars(res.data.cars);
     }catch(e){
       console.log(e);

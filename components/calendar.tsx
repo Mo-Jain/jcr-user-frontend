@@ -183,13 +183,14 @@ export default function Calendar({
                     )}
                     onClick={() => handleDateClick(day)}
                     >
-                    <span>{day.format("D")}</span>
-                    <span className={cn("flex justify-center items-center text-center px-1 max-sm:w-full ",
-                        checkPrevDate(day) ? "" : "hidden"
-                    )}>
-                        <span className="border-t absolute top-[45%] left-0 border-gray-600 dark:border-gray-400 w-6 h-1">
-                        </span>
-                    </span>
+                    <div className={checkPrevDate(day) ? "opacity-30" : ""}>
+                      <span>{day.format("D")}</span>
+                      <span className={cn("flex justify-center items-center text-center px-1 max-sm:w-full ",
+                          checkPrevDate(day) ? "" : "hidden"
+                      )}>
+                          <span className="border-t absolute top-[45%] left-0 border-gray-600 dark:border-gray-400 w-6 h-1"/>
+                      </span>
+                    </div>
                     </div>
                 )})}
                 </Fragment>

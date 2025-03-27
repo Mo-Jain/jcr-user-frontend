@@ -141,18 +141,15 @@ export function AddBookingDialog({
       setIsLoading(true);
       setButtonText("Checking availability");
       try {
-        const response = await axios.put(`${BASE_URL}/api/v1/car/availability/${car.id}`,{
-          startDate:newStartDate.toLocaleDateString("en-US"),
-          endDate:newEndDate.toLocaleDateString("en-US"),
-          startTime:newStartTime,
-          endTime:newEndTime,
-        },{
+        const user:string = "customer";
+        const response = await axios.get(`${BASE_URL}/api/v1/car/availability/${car.id}?startDate=${newStartDate}&endDate=${newEndDate}&startTime=${newStartTime}&endTime=${newEndTime}&user=${user}`,
+        {
           headers: {
             "Content-type": "application/json",
             authorization: `Bearer ` + localStorage.getItem("token"),
           },
         }
-      );
+        );
         if (response.data.isAvailable) {
           setButtonText("Book Now");
         } else {
@@ -177,6 +174,7 @@ export function AddBookingDialog({
       setIsLoading(false);
     }
     checkCarAvailability();
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newStartDate, newStartTime, newEndDate, newEndTime, startDate, startTime, endDate, endTime]);
 
   const handleSubmit = async (event: React.FormEvent) => {
