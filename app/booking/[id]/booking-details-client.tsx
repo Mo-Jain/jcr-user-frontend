@@ -21,6 +21,8 @@ import ActionDialog from "@/components/action-dialog";
 import axios from "axios";
 import { BASE_URL } from "@/lib/config";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogTitle,DialogFooter, DialogHeader, DialogOverlay } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface BookingDetailsClientProps {
   booking: Booking;
@@ -39,6 +41,8 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   const [isDropdownOpen,setIsDropdownOpen] = useState(false);
   const [isDialogOpen,setIsDialogOpen] = useState(false);
   const [bookingStatus,setBookingStatus] = useState<string>(booking.status);
+  const [isOTPDialogOpen,setIsOTPDialogOpen] = useState(false);
+  const [otp,setOtp] = useState("");
 
    function getHeader(
     status: string,
@@ -151,8 +155,39 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
     );
   };
 
+  const handleVerify = async() => {
+    try{
+      const res = await axios.get(`${BASE_URL}/api/v1/customer/check-otp/${booking.id}?otp=${otp}`,
+      {
+        headers: {
+          authorization: `Bearer ` + localStorage.getItem("token"),
+        }
+      });
+      if(res.data.isCorrect){
+        setIsOTPDialogOpen(false);
+        toast({
+          description: `OTP Successfully verified`,
+          className:
+            "text-black bg-white border-0 rounded-md shadow-mg shadow-black/5 font-normal",
+          duration: 2000,
+        });
+        router.push(`/booking/start/form/${booking.id}?otp=${otp}`);
+      }else {
+        toast({
+          description: `OTP is incorrect`,
+          className:
+            "text-black bg-white border-0 rounded-md shadow-mg shadow-black/5 font-normal",
+          duration: 2000,
+        });
+      }
+    }
+    catch(error){
+      console.log(error);
+    }
+  };
+
   return (
-    <div className="pt-16 sm:pt-12">
+    <div className="pt-16 sm:pt-12 relative z-0">
       
       <div className="flex pt-2 items-center justify-between px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white">
         <div
@@ -393,13 +428,66 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             )}
           </div>
         </div>
-
+        <div className="w-full flex justify-center">
+          {bookingStatus === "Upcoming" && (
+            <Button
+              className="px-4 py-4 max-sm:w-full active:scale-95 bg-blue-600 dark:text-black text-blue-100  shadow-lg"
+              onClick={() => {
+                setIsOTPDialogOpen(true);
+                
+              }}
+            >
+              <span className="">Start Booking</span>
+            </Button>
+          )}
+        </div>
         <ActionDialog
           isDialogOpen={isDialogOpen}
           setIsDialogOpen={setIsDialogOpen}
           action={"Cancel"}
           handleAction={handleCancel}
         />
+      </div>
+      <div className="relative z-50">
+        <Dialog open={isOTPDialogOpen} onOpenChange={setIsOTPDialogOpen}>
+          <DialogOverlay className="  backdrop-blur-lg"/>
+              <DialogContent className="max-w-[325px] max-sm:rounded-sm  bg-muted border-border">
+                <DialogHeader>
+                  <DialogTitle className="text-center mb-2">Enter OTP</DialogTitle>
+                  <DialogDescription className="text-grey-500 mt-1 flex justify-center">
+                    <Input
+                      type="text"
+                      id="otp"
+                      className="w-2/3 border-input max-sm:text-xs  focus:border-blue-400 focus-visible:ring-blue-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      value={otp}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*$/.test(value)) {
+                          setOtp(value);
+                        }
+                      }}
+                    />
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex flex-row w-full gap-2 items-center">
+                  <Button
+                    className="w-full active:scale-95 bg-primary hover:bg-opacity-10 shadow-lg"
+                    onClick={handleVerify}
+                  >
+                    Verify
+                  </Button>
+                  <Button
+                  variant={"outline"}
+                    className="w-full active:scale-95 bg-transparent hover:bg-black/10 dark:hover:bg-white/10 shadow-lg"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+          </Dialog>
       </div>
     </div>
   );

@@ -24,8 +24,8 @@ import axios from "axios"
 import { BASE_URL } from "@/lib/config"
 import LoadingScreen from "@/components/loading-screen"
 import { uploadToDrive } from "@/app/actions/upload"
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@radix-ui/react-dialog"
-import { DialogFooter, DialogHeader, DialogOverlay } from "@/components/ui/dialog"
+import { } from "@radix-ui/react-dialog"
+import {  Dialog, DialogContent, DialogDescription, DialogTitle,DialogFooter, DialogHeader, DialogOverlay } from "@/components/ui/dialog"
 import { useRouter } from "next/navigation"
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -46,6 +46,10 @@ export interface Document {
   url: string;
   type: string;
   docType: string;
+}
+
+interface FormErrors {
+  [key: string]: string;
 }
 
 export default function KYCPage() {
@@ -72,6 +76,7 @@ export default function KYCPage() {
   const [deletedPhotos,setDeletedPhotos] = useState<{id:number,url:string}[]>([]);
   const [hasUploaded,setHasUploaded] = useState(false);
   const {kycStatus,setKycStatus} = useUserStore();
+  const [errors, setErrors] = useState<FormErrors>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -118,11 +123,13 @@ export default function KYCPage() {
     setHasUploaded(false);
     setDeletedPhotos([]);
     updateCustomer();
+    setErrors((prev) => ({...prev, address: "", email: "", aadharFiles: "", licenseFiles: ""}))
   }
 
   // Handle address change
   const handleAddressChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setAddress(e.target.value)
+    setErrors((prev) => ({...prev, address: ""}))
   }
   
   if(!customer) 
@@ -131,7 +138,7 @@ export default function KYCPage() {
   // Handle file upload for Aadhar
   const handleAadharUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !isEditable) return
-
+    setErrors((prev) => ({...prev, aadharFiles: ""}))
     const newFile = e.target.files[0]
 
     if (aadharPreviews.length > 1) {
@@ -154,7 +161,7 @@ export default function KYCPage() {
   // Handle file upload for License
   const handleLicenseUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !isEditable) return
-
+    setErrors((prev) => ({...prev, licenseFiles: ""}))
     const newFiles = Array.from(e.target.files)
 
     if (licensePreviews.length + newFiles.length > 2) {
@@ -245,14 +252,24 @@ export default function KYCPage() {
     setIsPreviewOpen(true)
   }
 
+  const validateForm = () => {
+    const newErrors: FormErrors = {};
+    if (email === "") newErrors.email = "This field is mandatory";
+    if (address === "" ) newErrors.address = "This field is mandatory";
+    if(aadharFiles.length + aadharPreviews.length === 0) newErrors.aadharFiles = "documents are required";
+    if(licenseFiles.length + licensePreviews.length === 0) newErrors.licenseFiles = "documents are required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+
   // Submit form
   const handleSubmit = async() => {
-    setIsLoading(true);
     try{
       const resAadhar = [];
       const resLicense = [];
       let overallProgress = 0;
-      if (!address || !email) {
+      if (!validateForm()) {
         toast({
           description: `Please fill required fields`,
           className:
@@ -260,9 +277,10 @@ export default function KYCPage() {
           variant: "destructive",
           duration: 2000,
         });
+        setIsEditable(true);
         return;
       }
-
+      setIsLoading(true);
       setProgress(overallProgress);
       const updatedDocuments:Document[] = [];
       if(hasUploaded){
@@ -468,12 +486,25 @@ export default function KYCPage() {
                     <Input id="contact" value={customer.contact} disabled className="bg-muted/50" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center gap-2">
+                <div className="">
+                  <Label htmlFor="email" className="flex items-center gap-2 mb-2">
                     <Mail className="h-4 w-4" /> Email Address
                     {isEditable && email.length === 0 && <span className="text-sm text-red-400">*</span>}
                   </Label>
-                  <Input id="email" placeholder="Enter your email address" value={email} disabled={!isEditable} onChange={(e) => setEmail(e.target.value)} className="bg-muted/50" />
+                  <Input id="email" 
+                  placeholder="Enter your email address" 
+                  value={email} 
+                  disabled={!isEditable} 
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    setErrors((prev) => ({...prev, email: ""}))
+                  }} 
+                  className={cn("bg-muted/50", errors.email && "border border-red-500")} />
+                  {errors.email && (
+                    <p className="text-red-500 text-sm">
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -494,8 +525,8 @@ export default function KYCPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <Label htmlFor="address" className="flex items-center gap-2">
+                <div className="">
+                  <Label htmlFor="address" className="flex items-center gap-2 mb-2">
                     <MapPin className="h-4 w-4" /> Residential Address
                     {isEditable && address.length === 0 && <span className="text-sm text-red-400">*</span>}
 
@@ -505,8 +536,13 @@ export default function KYCPage() {
                     value={address}
                     onChange={handleAddressChange}
                     disabled={!isEditable}
-                    className={`min-h-[100px] `}
+                    className={`min-h-[100px] ${errors.address && "border border-red-500"}`}
                   />
+                  {errors.address && (
+                    <p className="text-red-500 text-sm">
+                      {errors.address}
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -531,7 +567,10 @@ export default function KYCPage() {
                 {/* Aadhar Card Upload */}
                 <div className="space-y-4">
                   <Label className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" /> Aadhar Card (Max 2 photos)
+                    <FileText className="h-4 w-4" /> 
+                    <span>Aadhar Card (Max 2 photos)</span>
+                    {aadharFiles.length + aadharPreviews.length === 0 && <span className="text-red-500 text-sm">*</span>}
+                    {errors.aadharFiles && <span className="text-red-500 ml-2 text-sm">{errors.aadharFiles}</span>}
                   </Label>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -587,7 +626,10 @@ export default function KYCPage() {
                 {/* Driving License Upload */}
                 <div className="space-y-4">
                   <Label className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" /> Driving License (Max 2 photos)
+                    <FileText className="h-4 w-4" /> 
+                    <span>Driving License (Max 2 photos)</span>
+                    {licenseFiles.length + licensePreviews.length === 0 && <span className="text-red-500 text-sm">*</span>}
+                    {errors.licenseFiles && <span className="text-red-500 ml-2 text-sm">{errors.licenseFiles}</span>}
                   </Label>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -716,8 +758,8 @@ export default function KYCPage() {
         </AlertDialogContent>
       </AlertDialog>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogOverlay className="fixed inset-0 bg-black/50 backdrop-blur-lg"/>
-        <DialogContent className="fixed top-[38%] left-0 max-sm:w-full sm:left-[33%] z-[100] p-2 rounded-md  sm:max-w-[425px] bg-muted border-border">
+        <DialogOverlay className=" bg-black/50 backdrop-blur-lg"/>
+        <DialogContent className="max-sm:w-full p-2 rounded-md  sm:max-w-[425px] bg-muted border-border">
           <DialogHeader>
             <DialogTitle>Update</DialogTitle>
             <DialogDescription className="text-grey-500">

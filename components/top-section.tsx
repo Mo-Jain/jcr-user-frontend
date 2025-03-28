@@ -75,6 +75,7 @@ export const TopSection = ({opacity}:{opacity:number}) => {
       })
       return;
     };
+    setIsSearching(true);
     const scrollY = window.scrollY;
     const end = isSmallScreen ? 110 : 130;
     const duration = 200 * (200 - scrollY) / end;
@@ -91,7 +92,7 @@ export const TopSection = ({opacity}:{opacity:number}) => {
               authorization: ` Bearer ${localStorage.getItem("token")}`
             }
           })
-      setIsSearching(true);
+      
       setFilteredCars(res.data.cars);
     }catch(e){
       console.log(e);

@@ -1,10 +1,11 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
-import { BookingDetailsClient } from "./booking-details-client";
 import LoadingScreen from "@/components/loading-screen";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { BASE_URL } from "@/lib/config";
+import BookingStartClient from "./booking-start-client";
+import { toast } from "@/hooks/use-toast";
 
 export interface Document {
   id: number;
@@ -39,36 +40,52 @@ export interface Booking {
   totalPrice?: number;
   advancePayment?: number;
   customerAddress?: string;
+  customerMail?: string;
   paymentMethod?: string;
+  drivingLicence?: string;
+  aadharCard?: string;
   odometerReading?: string;
-  endodometerReading?: string;
   notes?: string;
   selfieUrl?: string;
-  documents?: Document[];
-  carImages?: CarImage[];
-  customerId: number;
+  documents: Document[];
+  carImages: CarImage[];
   folderId: string;
-  cancelledBy? : "guest" | "host";
   bookingFolderId: string;
+  currOdometerReading: string;
 }
 
 export default function BookingDetails() {
   // const bookingId = await Number(params.id); // Resolve params.id synchronously after awaiting params
   const Booking = useParams();
+  const searchParams = useSearchParams();
+  const otp = searchParams.get("otp");
   const [booking, setBooking] = useState<Booking>();
   const router = useRouter();
   useEffect(() => {
     if (!Booking) return;
+    if(!otp) return;
     const fetchData = async () => {
       try {
         const res = await axios.get(
-          `${BASE_URL}/api/v1/booking/${Booking.id}`,
+          `${BASE_URL}/api/v1/booking/${Booking.id}?role=customer`,
           {
             headers: {
               authorization: `Bearer ` + localStorage.getItem("token"),
             },
           },
         );
+        if(res.data.booking.otp !== otp){
+          toast({
+            description: `OTP is incorrect`,
+            className:
+              "text-black bg-white border-0 rounded-md shadow-mg shadow-black/5 font-normal",
+            duration: 2000,
+          });
+          router.push("/booking/" + Booking.id)
+        }
+        if(res.data.booking.status !== "Upcoming"){
+          router.push("/booking/" + Booking.id)
+        }
         setBooking(res.data.booking);
       } catch (error) {
         console.log(error);
@@ -76,9 +93,12 @@ export default function BookingDetails() {
       }
     };
     fetchData();
-  }, [Booking, router]);
+  }, [Booking, router,otp]);
 
-  if (!Booking || !booking) {
+  if (!Booking) return null;
+  if(!otp) return null;
+
+  if (!booking) {
     return (
       <div>
         <LoadingScreen />
@@ -87,8 +107,8 @@ export default function BookingDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-background z-0">
-      <main className="container mx-auto px-0 py-2 pb-16 sm:pb-8 z-0">
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto px-0 py-2 pb-16 sm:pb-8">
         <Suspense
           fallback={
             <div>
@@ -96,7 +116,7 @@ export default function BookingDetails() {
             </div>
           }
         >
-          <BookingDetailsClient booking={booking} />
+          <BookingStartClient otp={otp} booking={booking} bookingId={Booking?.id || ""} />
         </Suspense>
       </main>
     </div>
