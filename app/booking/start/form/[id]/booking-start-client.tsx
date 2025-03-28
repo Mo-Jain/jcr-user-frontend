@@ -331,7 +331,7 @@ export default function BookingStartClient({
       setProgress(95);
       
       await axios.put(
-        `${BASE_URL}/api/v1/booking/${bookingId}/start?role=customer?otp=${otp}`,
+        `${BASE_URL}/api/v1/booking/${bookingId}/start?role=customer&otp=${otp}`,
         {
           customerName,
           customerContact: phoneNumber,
@@ -663,14 +663,17 @@ export default function BookingStartClient({
                 </Label>
                 <Input
                   id="bookingAmountReceived"
-                  type="number"
+                  type="text"
                   value={bookingAmountReceived}
                   onChange={(e) => {
-                    setBookingAmountReceived(Number(e.target.value));
-                    setErrors((prev) => ({
-                      ...prev,
-                      bookingAmountReceived: "",
-                    }));
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value)) {
+                      setBookingAmountReceived(Number(e.target.value));
+                      setErrors((prev) => ({
+                        ...prev,
+                        bookingAmountReceived: "",
+                      }));
+                    }
                   }}
                   className={cn(
                     inputClassName("bookingAmountReceived"),

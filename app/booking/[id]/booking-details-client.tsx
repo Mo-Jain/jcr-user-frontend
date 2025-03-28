@@ -16,13 +16,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreVertical } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ActionDialog from "@/components/action-dialog";
 import axios from "axios";
 import { BASE_URL } from "@/lib/config";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogTitle,DialogFooter, DialogHeader, DialogOverlay } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import Loader from "@/components/loader";
 
 interface BookingDetailsClientProps {
   booking: Booking;
@@ -43,6 +44,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   const [bookingStatus,setBookingStatus] = useState<string>(booking.status);
   const [isOTPDialogOpen,setIsOTPDialogOpen] = useState(false);
   const [otp,setOtp] = useState("");
+  const [isLoading,setIsLoading] = useState(false);
 
    function getHeader(
     status: string,
@@ -84,6 +86,18 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
     }
     return headerText;
   }
+
+  useEffect(() => {
+    if(isLoading){
+      document.documentElement.classList.add("no-scroll");
+    }else {
+      document.documentElement.classList.remove("no-scroll");
+    }
+
+    return () => {
+      document.documentElement.classList.remove("no-scroll");
+    };
+    }, [isLoading]);
 
 
   const getDocumentList = (type: "documents" | "photos" | "selfie") => {
@@ -164,13 +178,14 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
         }
       });
       if(res.data.isCorrect){
-        setIsOTPDialogOpen(false);
         toast({
           description: `OTP Successfully verified`,
           className:
             "text-black bg-white border-0 rounded-md shadow-mg shadow-black/5 font-normal",
           duration: 2000,
         });
+        setIsLoading(true);
+        setIsOTPDialogOpen(false);
         router.push(`/booking/start/form/${booking.id}?otp=${otp}`);
       }else {
         toast({
@@ -188,7 +203,11 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
 
   return (
     <div className="pt-16 sm:pt-12 relative z-0">
-      
+      {isLoading &&
+      <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/20 backdrop-blur-sm z-50">
+          <Loader/>
+      </div>
+      }
       <div className="flex pt-2 items-center justify-between px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white">
         <div
           className="mr-2 rounded-md font-bold  cursor-pointer dark:hover:bg-gray-800 hover:bg-gray-200"

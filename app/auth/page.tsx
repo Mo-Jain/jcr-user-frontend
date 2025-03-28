@@ -93,12 +93,14 @@ export default function AuthPage() {
       setName(res.data.name);
       router.push('/');
       setShouldInitiate(true);
+      setIsLoading(false);
     }
     catch(error){
       toast({
         title: "Something went wrong"
       })
       console.error("error",error)
+      setIsLoading(false);
     }
   };
 
