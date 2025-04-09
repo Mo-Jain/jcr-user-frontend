@@ -183,7 +183,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
 
  
   const totalAmount = calculateCost(booking.start,booking.end,booking.startTime,booking.endTime,booking.dailyRentalPrice);
-  const charge = (paymentMethod === "card" || paymentMethod === "netbanking") ? totalAmount*0.02 : 0;
+  const charge = booking?.totalPrice && (paymentMethod === "card" || paymentMethod === "netbanking") ? booking?.totalPrice*0.02 : 0;
   const amountRemaining = booking.totalPrice ? (booking.totalPrice - (advancePayment || 0)) : 0;
   
   const isSomeDetails = booking.odometerReading || booking.endodometerReading
@@ -290,7 +290,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
       <div className="w-full h-[70px]"/>
 
         <div className="w-full flex py-2 justify-center">
-          {(totalAmount - advancePayment) > 0 && (bookingStatus !== "Requested" ||  "Completed") &&
+          {((booking?.totalPrice || 0) - advancePayment) > 0 && bookingStatus !== "Requested"  && bookingStatus !== "Completed"  &&
           <div className=" flex flex-col items-center justify-center w-full">
             <Button 
             onClick={() => {
@@ -302,16 +302,20 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             </Button> 
             <div className={cn("w-full h-fit max-w-[360px] h-fit  overflow-hidden p-2 sm:px-4 flex justify-between mx-auto ",
             )}>
-              <PaymentButton selectedMethod="upi" totalAmount={totalAmount - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
-                <div className={cn("p-2 overflow-hidden  flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+              <PaymentButton selectedMethod="upi" totalAmount={(booking?.totalPrice || 0) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
+                <div
+                onClick={() => setIsLoading(true)}
+                className={cn("p-2 overflow-hidden  flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
                   <UPI className = "w-12 h-12 fill-none flex-shrink-0 stroke-[10px] stroke-foreground"/>
                   <p className="text-sm mb-3">UPI</p>
                 </div>
               </PaymentButton>
-              <PaymentButton selectedMethod="card" totalAmount={(totalAmount + totalAmount*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
-                <div className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+              <PaymentButton selectedMethod="card" totalAmount={((booking?.totalPrice || 0) + (booking?.totalPrice || 0)*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
+                <div 
+                onClick={() => setIsLoading(true)}
+                className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
                   <CreditCard className = "w-12 h-12 flex-shrink-0 fill-foreground"/>
@@ -321,8 +325,10 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                   </div>
                 </div>
               </PaymentButton>
-              <PaymentButton selectedMethod="netbanking" totalAmount={(totalAmount + totalAmount*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
-                <div className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+              <PaymentButton selectedMethod="netbanking" totalAmount={((booking?.totalPrice || 0) + (booking?.totalPrice || 0)*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
+                <div 
+                onClick={() => setIsLoading(true)}
+                className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
                   <ComputerIcon className = "w-12 h-12 flex-shrink-0"/>

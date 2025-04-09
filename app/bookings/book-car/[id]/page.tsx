@@ -299,7 +299,7 @@ export default function CarBookingPage() {
                 />
               </div>
             </div>
-            <Link href={mapUrl} className="text-sm" target="_blank" rel="noopener noreferrer">
+            <Link href={mapUrl} className="text-sm text-blue-500 dark:text-blue-400" target="_blank" rel="noopener noreferrer">
               {officeAddress}
             </Link>
           </div>
@@ -489,6 +489,7 @@ export default function CarBookingPage() {
                               <span className="text-sm">Kms</span>
                             </div>
                             {distanceError && <p className="text-xs text-red-500">{distanceError}</p>}
+                            <span className="text-xs">Please Note: Our location is mentioned at the top</span>
                           </div>
                         </div>
                         }
