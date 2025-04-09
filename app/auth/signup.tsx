@@ -32,7 +32,7 @@ export default function SignUp() {
             username:email,
             password:password,
             redirect: false,
-            callbackUrl: "http://localhost:3000",
+            callbackUrl: window.location.origin
         });
         if (res?.error) {
             setError(res.error);
