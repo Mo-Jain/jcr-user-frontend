@@ -1,22 +1,23 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Logo1 from "@/public/logo.svg";
 import { usePathname } from "next/navigation";
 import { useServerStore } from "@/lib/store";
 
 const SplashScreen = () => {
-  const {setIsInitiateComplete,setIsServerLoading} = useServerStore();
+  const {setIsInitiateComplete} = useServerStore();
+  const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
   useEffect(() => {
     // Hide the splash screen after 3 seconds
     const timer = setTimeout(() => {
-      setIsServerLoading(false);
+      setIsLoading(false);
       setIsInitiateComplete(true);
     }, 1200);
     return () => clearTimeout(timer);
-  }, [setIsInitiateComplete,setIsServerLoading]);
+  }, [setIsInitiateComplete,setIsLoading]);
 
-  if (pathname != "/") return null;
+  if (!isLoading || pathname != "/") return null;
 
   return (
     <div className="relative">

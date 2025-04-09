@@ -29,8 +29,8 @@ const Initiate = () => {
     const fetchData = async () => {
       if( pathname.includes("/test")) return;
       try {
-        setIsServerLoading(true);
         setIsLoading(true);
+        setIsServerLoading(true);
         if(session){
           setIsCarLoading(true);
           setName(session.user.name);
@@ -73,14 +73,11 @@ const Initiate = () => {
 
   if(pathname.includes("/test")) return null;
 
-  console.log("isInitiateComplete",isInitiateComplete);
-  console.log("isServerLoading",isServerLoading);
-  console.log("isLoading",isLoading);
 
-  if(isInitiateComplete && isServerLoading  && (pathname==="/"|| pathname==="/auth")) {
+  if(isInitiateComplete && isServerLoading && isLoading && (pathname==="/"|| pathname==="/auth")) {
     return <SkeletonPreLoader/>
   } 
-  else if (isServerLoading){
+  else if (isLoading && !isInitiateComplete){
     return <SplashScreen/>
   }
   return <InitiateScreen/>;
