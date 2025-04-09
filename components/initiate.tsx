@@ -73,7 +73,11 @@ const Initiate = () => {
 
   if(pathname.includes("/test")) return null;
 
-  if(isInitiateComplete && isServerLoading && isLoading && (pathname==="/"|| pathname==="/auth")) {
+  console.log("isInitiateComplete",isInitiateComplete);
+  console.log("isServerLoading",isServerLoading);
+  console.log("isLoading",isLoading);
+
+  if(isInitiateComplete && isServerLoading  && (pathname==="/"|| pathname==="/auth")) {
     return <SkeletonPreLoader/>
   } 
   else if (isServerLoading){
