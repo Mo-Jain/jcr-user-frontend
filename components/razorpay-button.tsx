@@ -192,9 +192,6 @@ const PaymentButton = ({
               if(setIsLoading) setIsLoading(false);
             }
           },
-          theme: {
-            color: '#436ccc',
-          },
           config: {
             display: {
               blocks: {
