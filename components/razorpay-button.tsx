@@ -146,7 +146,6 @@ const PaymentButton = ({
           currency: order.currency,
           order_id: order.id,
           name: 'Jain Car Rentals',
-          image: `${window.location.origin}/logo.png`,
           description: `Pay ₹${totalAmount} to book your car`,
           prefill: {
             name,
