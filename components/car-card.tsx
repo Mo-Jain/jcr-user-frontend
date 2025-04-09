@@ -145,7 +145,9 @@ export function CarCard({ car,flexlayout}: {
     <div 
     // style={{ fontFamily: "var(--font-leoscar), sans-serif" }}
     className="w-full z-0 relative z-0">
-      <div className="py-2 px-1 z-0 border border-border shadow-sm  bg-white dark:bg-muted rounded-md cursor-pointer">
+      <div className={cn("py-2 px-1  z-0 border border-border shadow-sm  bg-white dark:bg-muted rounded-md cursor-pointer",
+        flexlayout && "w-[165px] sm:w-[256px]",
+      )}>
         <div className="flex flex-col relative justify-between gap-1 sm:px-1 rounded-sm z-0">
           <div 
           ref={scrollRef}

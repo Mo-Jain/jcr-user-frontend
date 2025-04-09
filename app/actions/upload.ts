@@ -21,6 +21,7 @@ const USERNAME = process.env.STORAGE_ZONE_NAME;
 const oauth2Client = new google.auth.OAuth2(
   CLIENT_ID,
   CLIENT_SECRET,
+  "http://localhost:3000",
 );
 oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 const drive = google.drive({ version: "v3", auth: oauth2Client });

@@ -152,69 +152,74 @@ export default function Calendar({
       
 
       {/* Main Content: Weeks and Days */}
-      <div className=" flex max-sm:flex-col items-center gap-2 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+      <div className=" flex max-sm:flex-col items-center sm:gap-2 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
         <div>
-            {/* Header Row: Days of the Week */}
-            <div className="mt-2 font-semibold">
-                <div className="grid grid-cols-7 text-xs sm:text-sm">
-                {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
-                    <span key={i} className="py-1 text-center">
-                    {day}
+          {/* Header Row: Days of the Week */}
+          <div className="mt-2 font-semibold">
+              <div className="grid grid-cols-7 text-xs sm:text-sm">
+              {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
+                  <span key={i} className="py-1 text-center">
+                  {day}
+                  </span>
+              ))}
+              </div>
+          </div>
+          {/* Dates grid */}
+          <div className="grid grid-cols-7 w-[200px] sm:min-w-[246px] gap-x-0 grid-rows-5 gap-y-1 justify-items-center rounded-sm p-1 text-xs sm:text-sm">
+          {twoDMonthArray.map((row, i) => (
+              <Fragment key={i}>
+              {row.map((day, index) => {
+                  return(
+                  <div
+                  key={index}
+                  className={cn(
+                      "flex h-5 w-full p-3 sm:p-4 relative flex items-center justify-center rounded-sm ",
+                      checkPrevDate(day) ? "" : " hover:bg-blue-600 hover:text-white cursor-pointer",
+                      day.format("DD-MM-YY") === dayjs(startDate).format("DD-MM-YY") &&
+                      "bg-blue-600 text-white rounded-r-none",
+                      day.format("DD-MM-YY") === dayjs(endDate).format("DD-MM-YY") &&
+                      "bg-blue-600 text-white rounded-l-none",
+                      day.isAfter(dayjs(startDate)) && day.isBefore(dayjs(endDate)) && endDate!==null && "bg-blue-600 text-white rounded-none",
+                  )}
+                  onClick={() => handleDateClick(day)}
+                  >
+                  <div className={checkPrevDate(day) ? "opacity-30" : ""}>
+                    <span>{day.format("D")}</span>
+                    <span className={cn("flex justify-center items-center text-center px-1 max-sm:w-full ",
+                        checkPrevDate(day) ? "" : "hidden"
+                    )}>
+                        <span className="border-t absolute top-[45%] left-0 border-gray-600 dark:border-gray-400 w-6 h-1"/>
                     </span>
-                ))}
-                </div>
-            </div>
-            {/* Dates grid */}
-            <div className="grid grid-cols-7 w-[200px] sm:min-w-[246px] gap-x-0 grid-rows-5 gap-y-1 justify-items-center rounded-sm p-1 text-xs sm:text-sm">
-            {twoDMonthArray.map((row, i) => (
-                <Fragment key={i}>
-                {row.map((day, index) => {
-                    return(
-                    <div
-                    key={index}
-                    className={cn(
-                        "flex h-5 w-full p-3 sm:p-4 relative flex items-center justify-center rounded-sm ",
-                        checkPrevDate(day) ? "" : " hover:bg-blue-600 hover:text-white cursor-pointer",
-                        day.format("DD-MM-YY") === dayjs(startDate).format("DD-MM-YY") &&
-                        "bg-blue-600 text-white rounded-r-none",
-                        day.format("DD-MM-YY") === dayjs(endDate).format("DD-MM-YY") &&
-                        "bg-blue-600 text-white rounded-l-none",
-                        day.isAfter(dayjs(startDate)) && day.isBefore(dayjs(endDate)) && endDate!==null && "bg-blue-600 text-white rounded-none",
-                    )}
-                    onClick={() => handleDateClick(day)}
-                    >
-                    <div className={checkPrevDate(day) ? "opacity-30" : ""}>
-                      <span>{day.format("D")}</span>
-                      <span className={cn("flex justify-center items-center text-center px-1 max-sm:w-full ",
-                          checkPrevDate(day) ? "" : "hidden"
-                      )}>
-                          <span className="border-t absolute top-[45%] left-0 border-gray-600 dark:border-gray-400 w-6 h-1"/>
-                      </span>
-                    </div>
-                    </div>
-                )})}
-                </Fragment>
-            ))}
-            </div>
-        </div>
-
-        {/* Time Input */}
-        <div 
-        ref={timeListRef}
-        className="flex sm:flex-col h-full max-h-[175px] sm:max-h-[220px] max-w-[200px] overflow-scroll scrollbar-hide">
-            {timeArr.map((time, index) => (
-            <p
-              key={index}
-              onClick={() => handleTimeClick(time)}
-              style={{ fontFamily: "var(--font-bigjohnbold), sans-serif" }}
-              className={cn(
-                "text-sm sm:text-md max-sm:w-[45px] font-semibold whitespace-nowrap px-2 py-1 cursor-pointer",
-                time === selectedTime ? "bg-blue-500 text-white rounded-sm" : ""
-              )}
-            >
-              {time}
-            </p>
+                  </div>
+                  </div>
+              )})}
+              </Fragment>
           ))}
+          </div>
+          
+        </div>
+        <div className="mb-2">
+          <span className="text-white text-xs">
+            Input Time
+          </span>
+          {/* Time Input */}
+          <div 
+          ref={timeListRef}
+          className="flex sm:flex-col h-full max-h-[175px] sm:max-h-[220px] max-w-[200px] overflow-scroll scrollbar-hide">
+              {timeArr.map((time, index) => (
+              <p
+                key={index}
+                onClick={() => handleTimeClick(time)}
+                style={{ fontFamily: "var(--font-bigjohnbold), sans-serif" }}
+                className={cn(
+                  "text-sm sm:text-md max-sm:w-[45px] font-semibold whitespace-nowrap px-2 py-1 cursor-pointer",
+                  time === selectedTime ? "bg-blue-500 text-white rounded-sm" : ""
+                )}
+              >
+                {time}
+              </p>
+            ))}
+          </div>
         </div>
         <div className="h-full flex sm:flex-col gap-4 items-center justify-center">
             <p 
