@@ -440,7 +440,7 @@ export default function BookingStartClient({
 
   return (
     <div className="max-w-4xl mx-auto pt-20 sm:pt-16">
-      <div className="fixed top-[85px] px-3 sm:top-14 pt-2 bg-background z-10 w-full left-0 flex items-center gap-2 mb-6">
+      <div className="fixed top-[82px] px-3 sm:top-14 pt-2 bg-background z-10 w-full left-0 flex items-center gap-2 mb-6">
         <div
           className="mr-2 rounded-md font-bold   cursor-pointer dark:hover:bg-gray-800 hover:bg-gray-200"
           onClick={() => router.push("/booking/"+bookingId)}

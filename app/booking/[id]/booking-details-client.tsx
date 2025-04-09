@@ -28,6 +28,8 @@ import PaymentButton from "@/components/razorpay-button";
 import { calculateCost, cn } from "@/lib/utils";
 import UPI from "@/public/upi-bhim.svg";
 import CreditCard from "@/public/credit-card.svg";
+import Loader2 from "@/components/loader2";
+import NetBanking from "@/public/netbanking.svg";
 
 interface BookingDetailsClientProps {
   booking: Booking;
@@ -55,6 +57,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   const [copied, setCopied] = useState(false)
   const phoneNumber = "+91 79995 51582"
   const emailAddress = "jcrahmedabad@gmail.com";
+  const [isOTPLoading,setOTPLoading] = useState(false);
 
 
   const copyToClipboard = (text: string) => {
@@ -207,6 +210,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   };
 
   const handleVerify = async() => {
+    setOTPLoading(true);
     try{
       const res = await axios.get(`${BASE_URL}/api/v1/customer/check-otp/${booking.id}?otp=${otp}`,
       {
@@ -235,7 +239,9 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
     }
     catch(error){
       console.log(error);
+      setOTPLoading(false);
     }
+    setOTPLoading(false);
   };
 
   return (
@@ -328,7 +334,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                 className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
-                  <ComputerIcon className = "w-12 h-12 flex-shrink-0"/>
+                  <NetBanking className = {cn("w-12 h-12 flex-shrink-0 fill-foreground")}/>
                   <div className="flex flex-col gap-1">
                     <p className="text-sm ">Net banking</p>
                     <span className="text-[10px] -mt-2">{"(Extra 2% fee)"}</span>
@@ -441,7 +447,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
         <h3 className="text-lg font-semibold mb-4 ">
           Price and Payment Details
         </h3>
-        <div className="rounded-lg bg-gray-50 dark:bg-card p-4 space-y-2 w-full max-w-[500px] mx-auto">
+        <div className="rounded-lg bg-transparent py-4 px-2 space-y-2 w-full max-w-[500px] mx-auto">
             <div className="flex justify-between">
               <span className="text-sm">Daily Rate:</span>
               <span className="text-sm font-medium flex items-center gap-1">
@@ -652,7 +658,10 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               <DialogContent className="max-w-[325px] max-sm:rounded-sm  bg-muted border-border">
                 <DialogHeader>
                   <DialogTitle className="text-center mb-2">Enter OTP</DialogTitle>
-                  <DialogDescription className="text-grey-500 mt-1 flex justify-center">
+                  <DialogDescription >
+                  Ask owner for OTP
+                  </DialogDescription>
+                  <div className="text-grey-500 mt-1 flex justify-center">
                     <Input
                       type="text"
                       id="otp"
@@ -665,24 +674,33 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                         }
                       }}
                     />
-                  </DialogDescription>
+                  </div>
                 </DialogHeader>
                 <DialogFooter className="flex flex-row w-full gap-2 items-center">
+                   <Button
+                    variant={"outline"}
+                      className="w-full active:scale-95 bg-transparent  hover:bg-black/10 dark:hover:bg-white/10 shadow-lg"
+                      onClick={() => {
+                        setIsDialogOpen(false);
+                      }}
+                    >
+                      Cancel
+                  </Button>
+                  {!isOTPLoading ?
                   <Button
-                    className="w-full active:scale-95 bg-primary hover:bg-opacity-10 shadow-lg"
+                    className="w-full active:scale-95 bg-primary text-white hover:bg-opacity-70 shadow-lg"
                     onClick={handleVerify}
                   >
                     Verify
                   </Button>
+                  :
                   <Button
-                  variant={"outline"}
-                    className="w-full active:scale-95 bg-transparent hover:bg-black/10 dark:hover:bg-white/10 shadow-lg"
-                    onClick={() => {
-                      setIsDialogOpen(false);
-                    }}
-                  >
-                    Cancel
+                  className="w-full active:scale-95 bg-primary text-white bg-opacity-50 shadow-lg"
+                    >
+                      <Loader2/>
                   </Button>
+                  }
+                  
                 </DialogFooter>
               </DialogContent>
           </Dialog>

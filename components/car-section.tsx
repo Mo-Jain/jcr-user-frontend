@@ -35,7 +35,6 @@ export function CarSection() {
         document.documentElement.classList.remove("no-scroll");
       }
 
-      console.log("isPageLoading",isPageLoading)
   
       return () => {
         document.documentElement.classList.remove("no-scroll");
