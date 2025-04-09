@@ -1,6 +1,6 @@
 "use client";
 
-import BackArrow from "@/public/back-arrow.svg";
+import BackButton from "@/public/back-button.svg";
 import { useRouter } from "next/navigation";
 
 export default function TermsAndConditions() {
@@ -13,7 +13,7 @@ export default function TermsAndConditions() {
           onClick={() => router.back()}
         >
           <div className="h-10 w-9 flex border-border border justify-center items-center rounded-md ">
-            <BackArrow className="h-7 w-7 stroke-0 fill-gray-800 dark:fill-blue-300" />
+            <BackButton className="h-7 w-7 stroke-0 fill-gray-800 dark:fill-blue-300" />
           </div>
         </div>
         <div className="container mx-auto px-4 whitespace-nowrap">

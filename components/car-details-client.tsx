@@ -3,16 +3,14 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, IndianRupee, Star } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-
 import { useEffect, useRef, useState } from "react";
-import BackArrow from "@/public/back-arrow.svg";
+import BackButton from "@/public/back-button.svg";
 import axios from "axios";
 import { BASE_URL } from "@/lib/config";
 import LoadingScreen from "./loading-screen";
 import { toast } from "@/hooks/use-toast";
 import { useCarStore, useFavoriteStore } from "@/lib/store";
 import { Car } from "@/lib/types";
-import { AddBookingDialog } from "./add-booking";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +31,6 @@ export function CarDetailsClient({ carId }: { carId: number }) {
   const [isFavorite,setIsFavorite] = useState(false);
   const {favoriteCars,setFavoriteCars} = useFavoriteStore();
   const {cars,setCars} = useCarStore();
-  const [isBookingOpen,setIsBookingOpen] = useState(false);
   const [isPreviewOpen,setIsPreviewOpen] = useState(false);
   const [scrollValue,setScrollValue] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -42,7 +39,7 @@ export function CarDetailsClient({ carId }: { carId: number }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resCar = await axios.get(`${BASE_URL}/api/v1/car/${carId}`, {
+        const resCar = await axios.get(`${BASE_URL}/api/v1/customer/car/${carId}`, {
           headers: {
             "Content-type": "application/json",
             authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -163,11 +160,6 @@ export function CarDetailsClient({ carId }: { carId: number }) {
 
   return (
     <div>
-      <AddBookingDialog 
-              car={car} 
-              isOpen={isBookingOpen} 
-              setIsOpen={setIsBookingOpen}
-              />
       <div className="flex items-center mt-20 sm:mt-12 justify-between border-b border-gray-300 dark:border-zinc-700">
         <div
           className="mr-2 rounded-md font-bold  cursor-pointer hover:bg-gray-200 dark:hover:bg-muted"
@@ -175,7 +167,7 @@ export function CarDetailsClient({ carId }: { carId: number }) {
         >
           <div className="h-12 w-12 flex justify-center items-center rounded-full  ">
             <div className="h-9 w-9 p-1 rounded-full">
-              <BackArrow className="h-7 w-7 stroke-0 fill-gray-800 dark:fill-blue-300" />
+              <BackButton className="h-7 w-7 stroke-0 fill-gray-800 dark:fill-blue-300" />
             </div>
           </div>
         </div>
@@ -272,7 +264,7 @@ export function CarDetailsClient({ carId }: { carId: number }) {
         </div>
         <div className="mx-auto mt-4 w-full sm:w-1/2">
           <Button 
-          onClick={() => setIsBookingOpen(true)}
+          onClick={() => router.push('/bookings/book-car/'+car.id)}
           className="w-full ">Book Now</Button>
         </div>
       </div>

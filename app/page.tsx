@@ -12,6 +12,7 @@ import { MdClose } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { BASE_URL } from "@/lib/config";
+import { useSession } from "next-auth/react";
 
 const smoothScrollTo = (targetY: number, duration: number = 300) => {
   const startY = window.scrollY;
@@ -38,6 +39,7 @@ export default function Home() {
   const fadeEnd = isSmallScreen ? 110 : 130; // Fully invisible at 300px scroll
   const snapThreshold = (fadeEnd - fadeStart) / 2; // Halfway point
   const router = useRouter();
+  const session = useSession();
 
   const { kycStatus, kycStatusFlag,setKycStatusFlag } = useUserStore();
   const [opacity, setOpacity] = useState(1);
@@ -55,6 +57,10 @@ export default function Home() {
   
     return () => clearTimeout(timer); // Cleanup to avoid memory leaks
   }, [setKycStatusFlag]);
+
+  useEffect(() => {
+    console.log("session",session);
+  }, [session])
 
   const handleClose = async() => {
     setKycStatusFlag(false);
@@ -122,7 +128,7 @@ export default function Home() {
         className="relative z-10 transition-opacity duration-300 ease-in-out">
           <TopSection opacity={opacity} />
         </div>
-        <div className="relative z-0">
+        <div className="relative z-5">
           <CarSection />
         </div>
         <div className="relative z-0">
@@ -135,7 +141,7 @@ export default function Home() {
         </div>
         <div className="flex relative justify-around w-full mt-2 text-muted-foreground items-center gap-2">
           <Link
-            href="/terms-and-conditions"
+            href="/policy"
             target="_blank"
             className="text-center text-xs cursor-pointer hover:text-black dark:hover:text-white text-muted-foreground"
           >

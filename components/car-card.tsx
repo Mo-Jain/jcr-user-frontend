@@ -7,7 +7,6 @@ import axios from "axios";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
-import { AddBookingDialog } from "./add-booking";
 import { useRouter } from "next/navigation";
 
 const CARD_WIDTH = 264; // Width of each CarCard
@@ -19,7 +18,6 @@ export function CarCard({ car,flexlayout}: {
   const {favoriteCars,setFavoriteCars} = useFavoriteStore();
   const {cars,setCars} = useCarStore();
   const {name} = useUserStore();
-  const [isBookingOpen,setIsBookingOpen] = useState(false);
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrollValue,setScrollValue] = useState(0);
@@ -83,7 +81,7 @@ export function CarCard({ car,flexlayout}: {
       router.push("/login");
       return;
     }
-    setIsBookingOpen(true);
+    router.push('/bookings/book-car/'+car.id);      
   };
   
 
@@ -143,11 +141,6 @@ export function CarCard({ car,flexlayout}: {
       e.preventDefault();
       e.stopPropagation();
     }}>
-      <AddBookingDialog 
-        car={car} 
-        isOpen={isBookingOpen} 
-        setIsOpen={setIsBookingOpen}
-        />
     </div>
     <div 
     // style={{ fontFamily: "var(--font-leoscar), sans-serif" }}
@@ -192,7 +185,7 @@ export function CarCard({ car,flexlayout}: {
               </>}
               
           </div>
-          <div className="w-full sm:px-2 flex flex-col justify-around items-start gap-1 text-xs sm:text-sm  min-h-[86px] sm:min-h-[100px] flex flex-col">
+          <div className="w-full sm:px-2 flex flex-col justify-around items-start gap-1 text-xs sm:text-sm  min-h-[96px] sm:min-h-[100px] flex flex-col">
             <h3 className="w-full overflow-hidden text-start font-semibold whitespace-wrap">
               <span 
               style={{ fontFamily: "var(--font-bigjohnbold), sans-serif" }}
@@ -214,7 +207,8 @@ export function CarCard({ car,flexlayout}: {
                 <div 
                 onClick = {handleBookClick}
                 style={{ fontFamily: "var(--font-bigjohnbold), sans-serif" }}
-                className="text-xs sm:text-sm py-1  text-center text-white active:scale-[0.95] bg-blue-400 rounded-full">Book</div>
+                className="text-xs sm:text-sm py-1 flex items-center justify-center text-center text-white active:scale-[0.95] bg-blue-400 rounded-full h-fit">
+                  Book</div>
                 <div className="w-full flex items-center justify-center">
                   <Star 
                   onClick={(e) => handleFavoriteClick(e)}

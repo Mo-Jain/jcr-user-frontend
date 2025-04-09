@@ -12,8 +12,9 @@ import { BASE_URL } from "@/lib/config";
 import Booking from "@/public/online-booking.svg";
 import Loader from "@/components/loader";
 import { useRouter } from "next/navigation";
+import LoaderOverlay from "@/components/loader-overlay";
 
-type BookingStatus = "Upcoming" | "Ongoing" | "Completed" | "Cancelled" | "All";
+type BookingStatus = "Requested" | "Upcoming" | "Ongoing" | "Completed" | "Cancelled" | "All";
 
 function formatDateTime(dateString: string) {
   return new Date(dateString).toLocaleString("en-US", {
@@ -28,6 +29,7 @@ function getTimeUntilBooking(startTime: string, status: string) {
   if (status === "Completed") return "Booking has ended";
   if (status === "Cancelled") return "Booking has been cancelled";
   if (status === "Ongoing") return "Booking has started";
+  if( status === "Requested") return "Booking hasn't been confirmed";
   const now = new Date();
   const start = new Date(startTime);
   const diffTime = start.getTime() - now.getTime();
@@ -51,6 +53,7 @@ export interface Booking {
   endTime: string;
   status: string;
   price:number;
+  type:string;
 }
 
 export default function Bookings() {
@@ -60,6 +63,7 @@ export default function Bookings() {
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+  const [isPageLoading,setIsPageLoading] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -106,10 +110,21 @@ export default function Bookings() {
     setFilteredBookings(newfilteredBookings);
   }, [bookings,  selectedStatus]);
 
+  useEffect(() => {
+      if(isPageLoading){
+      document.documentElement.classList.add("no-scroll");
+      }else {
+      document.documentElement.classList.remove("no-scroll");
+      }
+
+      return () => {
+      document.documentElement.classList.remove("no-scroll");
+      };
+  }, [isPageLoading]);
 
   return (
     <div className="min-h-screen bg-background mt-12 max-sm:mt-16 max-sm:mb-12">
-   
+      {isPageLoading && <LoaderOverlay />}
       <main className="container mx-auto px-2 sm:px-4 py-8 pb-16 sm:pb-8">
         <div className="flex justify-between items-center mb-6">
           <h1
@@ -128,6 +143,15 @@ export default function Bookings() {
             >
               All{getBookingLength("All")}
             </Button>
+            <Button
+              variant={selectedStatus === "Requested" ? "default" : "outline"}
+              className={
+                selectedStatus === "Requested"
+                  ? "bg-blue-400 hover:bg-blue-500 active:scale-95 text-white dark:text-black rounded-sm"
+                  : "hover:bg-blue-100 rounded-sm bg-transparent border-border dark:text-white dark:hover:bg-zinc-700 text-black"
+              }
+              onClick={() => setSelectedStatus("Requested")}
+            >Requested{getBookingLength("Requested")}</Button>
             <Button
               variant={selectedStatus === "Upcoming" ? "default" : "outline"}
               className={
@@ -180,10 +204,14 @@ export default function Bookings() {
         {bookings.length > 0 ? (
           <div ref={containerRef} className="space-y-4">
             {filteredBookings.map((booking, index) => (
-              <BookingCard
+              <div 
                 key={index}
-                booking={booking}
-              />
+                onClick={() =>setIsPageLoading(true)}>
+                <BookingCard
+                  key={index}
+                  booking={booking}
+                />
+              </div>
             ))}
             {filteredBookings.length === 0 && (
               <div className="w-full h-full py-28 gap-2 flex flex-col justify-center items-center">
@@ -237,11 +265,14 @@ const BookingCard = ({
      
       <Card className="w-full overflow-hidden bg-white dark:bg-background hover:shadow-md border-border transition-shadow my-2">
         <Link href={`/booking/${booking.id}`}>
-          <CardContent className="p-0">
+          <CardContent className="p-0 ">
             <div className=" dark:bg-background border-b border-border flex flex-row-reverse items-center justify-between">
-              <div className="flex-1 sm:p-4 py-2 px-2 h-full">
-                <div className="flex items-center justify-between w-full gap-2 mb-3">
-                  <div>
+              <div className=" relative flex-1 sm:p-4 py-2 px-2 h-full border-l border-border">
+                <div className=" flex items-start justify-between w-full gap-2 mb-3">
+                  <div className="absolute top-[40%] text-sm right-0 rounded-s-lg bg-blue-400 border-border p-1 px-2">
+                    {booking.type}
+                  </div>
+                  <div className="max-sm:text-sm">
                     <p>
                       {booking.carName}
                     </p>
@@ -249,7 +280,7 @@ const BookingCard = ({
                       {booking.carPlateNumber}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex max-sm:text-sm items-center gap-2">
                     <IndianRupee className="w-4 h-4"/>
                     <p>{booking.price}</p>
                   </div>
@@ -270,7 +301,7 @@ const BookingCard = ({
                   </div>
                 </div>
               </div>
-              <div className="text-center flex flex-col items-center p-4 max-sm:p-2  border-r border-border">
+              <div className="text-center flex flex-col items-center p-4 max-sm:p-2">
                 <div className="relative sm:w-24 flex items-center sm:h-20 rounded-md border border-border w-16 h-12 mb-2">
                   {booking.carImageUrl ? (
                     <Image

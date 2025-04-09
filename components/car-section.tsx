@@ -10,6 +10,7 @@ import ArrowRight from "@/public/right_arrow.svg";
 import FlexLayoutCars from "./flex-layout-cars";
 import LoadingScreen from "./loading-screen";
 import Loader from "./loader";
+import { useEffect, useState } from "react";
 
 export function CarSection() {
   const { name } = useUserStore();
@@ -17,6 +18,7 @@ export function CarSection() {
   const {isSearching} = useSearchStore();
   const {startDate,endDate,startTime,endTime} = useSearchStore();
   const {filteredCars,isLoading} = useFilteredCarStore();
+  const [isPageLoading,setIsPageLoading] = useState(false);
 
   function formatDateTime(dateString: Date | null) {
     if(!dateString) return "";
@@ -26,12 +28,30 @@ export function CarSection() {
       year: "numeric",
     });
   }
+  useEffect(() => {
+      if(isPageLoading){
+        document.documentElement.classList.add("no-scroll");
+      }else {
+        document.documentElement.classList.remove("no-scroll");
+      }
+
+      console.log("isPageLoading",isPageLoading)
+  
+      return () => {
+        document.documentElement.classList.remove("no-scroll");
+      };
+      }, [isPageLoading]);
 
   if(isCarLoading ) 
     return <LoadingScreen/>;
 
   return (
     <div className="mx-2">
+      {isPageLoading &&
+      <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/20 backdrop-blur-sm z-[100]">
+          <Loader/>
+      </div>
+      }
       {name ? (
         <div >
           {isSearching &&
@@ -63,16 +83,18 @@ export function CarSection() {
               className="grid grid-cols-2 mt-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3"
             >
               {filteredCars.map((car,index) => (
-                <Link
-                  href={`/car/${car.id}`}
-                  key={index}
-                  className="transform transition-all duration-300 hover:scale-105"
-                >
-                  <CarCard
-                    car={car}
-                    flexlayout={false}
-                  />
-                </Link>
+                <div key={index} onClick={() => setIsPageLoading(true)}>
+                  <Link
+                      href={`/car/${car.id}`}
+                      
+                      className="transform transition-all duration-300 hover:scale-105"
+                    >
+                      <CarCard
+                        car={car}
+                        flexlayout={false}
+                      />
+                  </Link>
+                </div>
               ))}
             </div>
             :

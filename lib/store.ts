@@ -51,6 +51,11 @@ interface CarStore {
   setIsCarLoading: (value: boolean) => void;
 }
 
+interface ScreenLoader {
+  isLoading: boolean;
+  setIsLoading: (value: boolean) => void;
+}
+
 interface LoginStore {
   isSignUp: boolean;
   setIsSignUp: (value: boolean) => void;
@@ -70,13 +75,38 @@ type ServerStore ={
   setIsInitiateComplete: (isInitiateComplete:boolean) => void;
 }
 
-export const useServerStore = create<ServerStore>((set) => ({
-  isServerLoading: false,
-  setIsServerLoading: (isServerLoading:boolean) => set({ isServerLoading }),
+export const useServerStore = create<ServerStore>()(
+  devtools(
+    persist(
+      (set) => ({
+        isServerLoading: false,
+        setIsServerLoading: (isServerLoading:boolean) => {
+          set({ isServerLoading: isServerLoading });
+        },
+        isInitiateComplete:false,
+        setIsInitiateComplete: (isInitiateComplete:boolean) => {
+          set({ isInitiateComplete: isInitiateComplete });
+        },
+      }),
+      { name: "server_data", skipHydration: true },
+    ),
+  ),  
+);
 
-  isInitiateComplete: false, // Track if InitiateScreen has disappeared
-  setIsInitiateComplete: (status:boolean) => set({ isInitiateComplete: status }),
-}));
+export const useLoaderStore = create<ScreenLoader>()(
+  devtools(
+    persist(
+      (set) => ({
+        isLoading: false,
+        setIsLoading: (isLoading:boolean) => {
+          set({ isLoading: isLoading });
+        }
+      }),
+      { name: "loading_data", skipHydration: true },
+    ),
+  ),  
+);
+
 
 export const useDateStore = create<DateStoreType>()(
   devtools(

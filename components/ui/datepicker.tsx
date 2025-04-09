@@ -61,8 +61,8 @@ export function DatePicker({
             mode="single"
             selected={date}
             onSelect={(date) => setDate(date || new Date())}
-            initialFocus
             style={{ pointerEvents: "auto" }}
+            defaultMonth={date}
             className="bg-background"
           />
         </PopoverContent>

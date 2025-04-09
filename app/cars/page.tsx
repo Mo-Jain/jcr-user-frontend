@@ -1,6 +1,6 @@
 'use client';
 import { CarCard } from "@/components/car-card";
-import LoadingScreen from "@/components/loading-screen";
+import LoaderOverlay from "@/components/loader-overlay";
 import { BASE_URL } from "@/lib/config";
 import { Car } from "@/lib/types";
 import axios from "axios";
@@ -29,11 +29,9 @@ const Page = () => {
         fetchData();
     }, []);
 
-    if (isLoading) {
-        return <LoadingScreen/>
-    }
     return (
-    <div className="w-full min-h-screen pt-20 sm:pt-16 pb-16 sm:pb-0 h-full bg-background px-4">
+    <div className="w-full min-h-screen pt-24 sm:pt-16 pb-16 sm:pb-0 h-full bg-background px-4">
+        {isLoading && <LoaderOverlay />}
         <h1
             style={{ fontFamily: "var(--font-equinox), sans-serif" }}
             className="sm:text-3xl text-xl font-black font-myfont pb-4 mb-4 w-full border-b border-border"
@@ -45,16 +43,20 @@ const Page = () => {
             className="grid z-0 grid-cols-2 mt-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3"
             >
             {cars.map((car) => (
-                <Link
-                href={`/car/${car.id}`}
-                key={car.id}
-                className="transform transition-all z-0 duration-300 hover:scale-105"
+                <div key={car.id} 
+                onClick={() => setIsLoading(true)}
                 >
-                <CarCard
-                    car={car}
-                    flexlayout={false}
-                />
-                </Link>
+                    <Link
+                    href={`/car/${car.id}`}
+                    key={car.id}
+                    className="transform transition-all z-0 duration-300 hover:scale-105"
+                    >
+                    <CarCard
+                        car={car}
+                        flexlayout={false}
+                    />
+                    </Link>
+                </div>
             ))}
         </div>
     </div>

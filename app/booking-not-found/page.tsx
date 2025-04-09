@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import BackArrow from "@/public/back-arrow.svg";
+import BackButton from "@/public/back-button.svg";
 
 const Home = () => {
   return (
@@ -23,7 +23,7 @@ const Home = () => {
         <CardContent className="flex flex-col items-center space-y-4">
           <div className="h-30 w-30 p-2 rounded-full bg-blue-300 bg-opacity-20">
             <div className="h-25 w-25 p-2 rounded-full bg-blue-300">
-              <BackArrow className="h-20 w-20 stroke-0 fill-white" />
+              <BackButton className="h-20 w-20 stroke-0 fill-white" />
             </div>
           </div>
           <p className="text-center text-muted-foreground">
@@ -34,7 +34,7 @@ const Home = () => {
         <CardFooter className="flex flex-col space-y-4">
           <Button asChild className="w-full active:scale-95">
             <Link href="/bookings">
-              <BackArrow className=" h-7 w-4 stroke-0 fill-black" />
+              <BackButton className=" h-7 w-4 stroke-0 fill-black" />
               Back to Bookings
             </Link>
           </Button>

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
+import { calculateCost, cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { BASE_URL } from "@/lib/config";
@@ -21,7 +21,6 @@ import { toast } from "@/hooks/use-toast";
 import { useCarStore } from "@/lib/store";
 import { DatePicker } from "@/components/ui/datepicker";
 import AddTime from "@/components/add-time";
-import { calculateCost } from "@/components/add-booking";
 import { Booking, Document } from "./page";
 import { RenderFileList, RenderNewFileList } from "./render-file-list";
 import { uploadToDrive } from "@/app/actions/upload";
@@ -29,6 +28,17 @@ import Link from "next/link";
 import PDFDocument from "@/components/pdf-document";
 import { pdf } from "@react-pdf/renderer";
 import { sendEmailWithAttachment } from "@/app/actions/mail";
+import BackButton from "@/public/back-button.svg";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogDescription } from "@radix-ui/react-dialog";
+import PaymentButton from "@/components/razorpay-button";
+import UPI from "@/public/upi-bhim.svg";
+import CreditCard from "@/public/credit-card.svg";
+import Cash from "@/public/cash.svg";
+import NetBanking from "@/public/netbanking.svg";
+import Loader2 from "@/components/loader2";
+import { IndianRupee } from "lucide-react";
+import Redirect from "@/public/redirect.svg";
 
 interface FormErrors {
   [key: string]: string;
@@ -58,14 +68,11 @@ export default function BookingStartClient({
   );
   const [address, setAddress] = useState(booking.customerAddress);
   const [notes, setNotes] = useState(booking.notes);
-  const [bookingAmountReceived, setBookingAmountReceived] = useState(
-    booking.advancePayment || 0,
-  );
+  
   const [dailyRentalPrice, setDailyRentalPrice] = useState(
     booking.dailyRentalPrice || 0,
   );
   const [totalAmount, setTotalAmount] = useState(booking.totalPrice || 0);
-  const [paymentMethod, setPaymentMethod] = useState(booking.paymentMethod);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [documents, setDocuments] = useState<Document[] | undefined>(
@@ -84,6 +91,7 @@ export default function BookingStartClient({
   const [progress, setProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState("Please wait");
   const [customerMail, setCustomerMail] = useState(booking.customerMail || "");
+  const [payDialogOpen,setPayDialogOpen] = useState(false);
 
   useEffect(() => {
     const cost = calculateCost(
@@ -110,12 +118,9 @@ export default function BookingStartClient({
     if (!odometerReading) newErrors.odometerReading = "This field is mandatory";
     if (!address) newErrors.address = "This field is mandatory";
     if (!customerMail) newErrors.mail = "This field is mandatory";
-    if (!bookingAmountReceived)
-      newErrors.bookingAmountReceived = "This field is mandatory";
     if (!dailyRentalPrice)
       newErrors.dailyRentalPrice = "This field is mandatory";
     if (!totalAmount) newErrors.totalAmount = "This field is mandatory";
-    if (!paymentMethod) newErrors.paymentMethod = "This field is mandatory";
     if (!termsAccepted)
       newErrors.terms = "You must accept the terms and conditions";
     if(customerMail === "") newErrors.mail = "This field is mandatory";
@@ -257,6 +262,14 @@ export default function BookingStartClient({
     }
   }
 
+  const onPayment = () => {
+    setPayDialogOpen(false);
+    router.push('/');
+    toast({
+      title:"Booking started successfully"
+    })
+  }
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -272,64 +285,8 @@ export default function BookingStartClient({
     }
     setIsLoading(true);
     try {
-      let overallProgress = 1;
-
-      setProgress(overallProgress);
-      const totalSize = Object.values(uploadedFiles)
-        .flat()
-        .reduce((acc, file) => acc + file.size, 0);
-
-      setLoadingMessage("Uploading Aadhar ");
-      const docFiles = [];
-      if (uploadedFiles.documents) {
-        for (const file of uploadedFiles.documents) {
-          const res = await uploadToDrive(file, booking.folderId);
-          if (res.error) {
-            throw new Error("Failed to upload documents");
-            return;
-          }
-          docFiles.push(res);
-          overallProgress += Math.round((file.size / totalSize) * 100) * 0.95;
-          setProgress(overallProgress);
-        }
-      }
-      setLoadingMessage("Uploaded Aadhar");
-
-      const photoFiles = [];
-      if(uploadedFiles.photos.length > 0) {
-        setLoadingMessage("Uploading Car Photos");
-        for (const file of uploadedFiles.photos) {
-          const res = await uploadToDrive(file, booking.bookingFolderId);
-          if (res.error) {
-            throw new Error("Failed to upload car photos");
-            return;
-          }
-          photoFiles.push(res);
-          overallProgress += Math.round((file.size / totalSize) * 100) * 0.95;
-          setProgress(overallProgress);
-        }
-      }
-      let resSelfie
-      if(uploadedFiles.selfie.length > 0) {
-        setLoadingMessage("Uploading Selfie");
-        resSelfie = await uploadToDrive(
-          uploadedFiles.selfie[0],
-          booking.bookingFolderId,
-        );
-        const selfieSize = uploadedFiles.selfie[0].size;
-        overallProgress += Math.round((selfieSize / totalSize) * 100) * 0.95;
-        setProgress(overallProgress);
-      }
-
-      setLoadingMessage("Uploaded Selfie");
-      
-      if (resSelfie && resSelfie.error) {
-        throw new Error("Failed to upload selfie photo");
-        return;
-      }
-      setLoadingMessage("Please wait")
-      setProgress(95);
-      
+      setProgress(100);
+      setLoadingMessage("Starting booking");
       await axios.put(
         `${BASE_URL}/api/v1/booking/${bookingId}/start?role=customer&otp=${otp}`,
         {
@@ -343,15 +300,10 @@ export default function BookingStartClient({
           securityDeposit,
           odometerReading: odometerReading.toString(),
           customerAddress: address,
-          bookingAmountReceived,
           dailyRentalPrice,
           totalAmount,
-          paymentMethod,
           notes,
-          documents: docFiles.length > 0 ? docFiles : undefined,
-          selfieUrl: resSelfie ? resSelfie.url : undefined,
-          carImages: photoFiles,
-          customerMail: customerMail,
+          customerMail:customerMail,
         },
         {
           headers: {
@@ -360,16 +312,94 @@ export default function BookingStartClient({
           },
         },
       );
+
+      const totalSize = Object.values(uploadedFiles)
+          .flat()
+          .reduce((acc, file) => acc + file.size, 0);
+
+      toast({
+        description: `Booking details successfully submitted`,
+        duration: 2000,
+      });
+      
+      if(totalSize> 0) {
+        let overallProgress = 1;
+        setProgress(overallProgress);
+        setLoadingMessage("Uploading Aadhar ");
+
+        const docFiles = [];
+        if (uploadedFiles.documents) {
+          for (const file of uploadedFiles.documents) {
+            const res = await uploadToDrive(file, booking.folderId);
+            if (res.error) {
+              throw new Error("Failed to upload documents");
+              return;
+            }
+            docFiles.push(res);
+            overallProgress += Math.round((file.size / totalSize) * 100) * 0.97;
+            setProgress(overallProgress);
+          }
+        }
+        setLoadingMessage("Uploaded Aadhar");
+
+        const photoFiles = [];
+        if(uploadedFiles.photos.length > 0) {
+          setLoadingMessage("Uploading Car Photos");
+          for (const file of uploadedFiles.photos) {
+            const res = await uploadToDrive(file, booking.bookingFolderId);
+            if (res.error) {
+              throw new Error("Failed to upload car photos");
+              return;
+            }
+            photoFiles.push(res);
+            overallProgress += Math.round((file.size / totalSize) * 100) * 0.97;
+            setProgress(overallProgress);
+          }
+        }
+        let resSelfie
+        if(uploadedFiles.selfie.length > 0) {
+          setLoadingMessage("Uploading Selfie");
+          resSelfie = await uploadToDrive(
+            uploadedFiles.selfie[0],
+            booking.bookingFolderId,
+          );
+          const selfieSize = uploadedFiles.selfie[0].size;
+          overallProgress += Math.round((selfieSize / totalSize) * 100) * 0.97;
+          setProgress(overallProgress);
+        }
+
+        setLoadingMessage("Uploaded Selfie");
+        
+        if (resSelfie && resSelfie.error) {
+          throw new Error("Failed to upload selfie photo");
+          return;
+        }
+        setProgress(98);
+        setLoadingMessage("Please wait");
+   
+        await axios.put(
+          `${BASE_URL}/api/v1/booking/${bookingId}/start/document?role=customer&otp=${otp}`,
+          {
+            documents: docFiles.length > 0 ? docFiles : undefined,
+            selfieUrl: resSelfie ? resSelfie.url : undefined,
+            carImages: photoFiles.length > 0 ? photoFiles : undefined,
+          },
+          {
+            headers: {
+              "Content-type": "application/json",
+              authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          },
+        );
+        toast({
+          description: `Document Successfully uploaded`,
+          duration: 2000,
+        });
+      }
       await sendingMail();
       setIsLoading(false);
       setProgress(100);
-      toast({
-        description: `Booking Successfully started`,
-        className:
-          "text-black bg-white border-0 rounded-md shadow-mg shadow-black/5 font-normal",
-      });
-      router.push("/bookings");
-      router.refresh();
+      setPayDialogOpen(true);
     } catch (error) {
       console.log(error);
       toast({
@@ -410,14 +440,36 @@ export default function BookingStartClient({
 
   return (
     <div className="max-w-4xl mx-auto pt-20 sm:pt-16">
-      <h1 className="text-2xl font-bold ">Booking Start Checklist</h1>
-      <div className="mb-6">
-        <span className="text-sm text-blue-600 dark:text-blue-400">
-          Booking Id:{" "}
-        </span>
-        <span className="text-sm">{bookingId}</span>
+      <div className="fixed top-[85px] px-3 sm:top-14 pt-2 bg-background z-10 w-full left-0 flex items-center gap-2 mb-6">
+        <div
+          className="mr-2 rounded-md font-bold   cursor-pointer dark:hover:bg-gray-800 hover:bg-gray-200"
+          onClick={() => router.push("/booking/"+bookingId)}
+        >
+          <div className="h-10 w-9 flex border-border border justify-center items-center rounded-md ">
+            <BackButton className="h-7 w-7 stroke-0 fill-gray-800 dark:fill-blue-300" />
+          </div>
+        </div>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold ">Booking Start Checklist</h1>
+          <div className="">
+            <span className="text-sm text-blue-600 dark:text-blue-400">
+              Booking Id:{" "}
+            </span>
+            <span className="text-sm">{bookingId}</span>
+          </div>
+        </div>
+        {/* <Button onClick={() => setPayDialogOpen(true)}>Pay</Button> */}
       </div>
-      <div className="space-y-6 max-sm:mb-12">
+      <PaymentDialog 
+        open={payDialogOpen} 
+        setOpen={setPayDialogOpen}
+        onSuccess={onPayment}
+        bookingId={booking.id}
+        amount={totalAmount}
+      />
+      <div className="h-[60px] mb-4 w-full"/>
+      <div className="space-y-6 max-sm:mb-4">
+        <span className="text-md opacity-60">Fill the details to start the trip</span>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="flex justify-between space-x-2 items-center">
@@ -544,51 +596,23 @@ export default function BookingStartClient({
                   </p>
                 )}
               </div>
-              <div className="w-full">
-                <Label className="max-sm:text-xs" htmlFor="paymentMethod">
-                  Payment Method <span className="text-red-500">*</span>
+              <div>
+                <Label className="max-sm:text-xs" htmlFor="securityDeposit">
+                  Security Deposit <span className="text-red-500">*</span>
                 </Label>
-                <Select
-                  value={paymentMethod}
-                  onValueChange={(value) => {
-                    setPaymentMethod(value);
-                    setErrors((prev) => ({ ...prev, paymentMethod: "" }));
+                <Input
+                  type="text"
+                  id="securityDeposit"
+                  value={securityDeposit}
+                  onChange={(e) => {
+                    setSecurityDeposit(e.target.value);
+                    setErrors((prev) => ({ ...prev, securityDeposit: "" }));
                   }}
-                >
-                  <SelectTrigger
-                    id="paymentMethod"
-                    value={paymentMethod}
-                    className={inputClassName("paymentMethod")}
-                  >
-                    <SelectValue
-                      className="placeholder:text-xs"
-                      placeholder="Select method"
-                    />
-                  </SelectTrigger>
-                  <SelectContent className="bg-muted border-border">
-                    <SelectItem
-                      className="hover:dark:bg-card cursor-pointer"
-                      value="Cash"
-                    >
-                      Cash
-                    </SelectItem>
-                    <SelectItem
-                      className="hover:dark:bg-card cursor-pointer"
-                      value="Card"
-                    >
-                      Card
-                    </SelectItem>
-                    <SelectItem
-                      className="hover:dark:bg-card cursor-pointer"
-                      value="UPI"
-                    >
-                      UPI
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.paymentMethod && (
+                  className={inputClassName("securityDeposit")}
+                />
+                {errors.securityDeposit && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.paymentMethod}
+                    {errors.securityDeposit}
                   </p>
                 )}
               </div>
@@ -610,6 +634,9 @@ export default function BookingStartClient({
                 <p className="text-red-500 text-sm mt-1">{errors.address}</p>
               )}
             </div>
+            
+          </div>
+          <div className="space-y-4">
             <div>
               <Label className="max-sm:text-xs" htmlFor="mail">
                 Customer Mail <span className="text-red-500">*</span>
@@ -627,8 +654,6 @@ export default function BookingStartClient({
                 <p className="text-red-500 text-sm mt-1">{errors.mail}</p>
               )}
             </div>
-          </div>
-          <div className="space-y-4">
             <div className="flex justify-between space-x-2 items-center">
               <div>
                 <Label className="max-sm:text-xs" htmlFor="odometerReading">
@@ -659,22 +684,13 @@ export default function BookingStartClient({
                   className="max-sm:text-xs"
                   htmlFor="bookingAmountReceived"
                 >
-                  Amount Received <span className="text-red-500">*</span>
+                  Amount Paid
                 </Label>
                 <Input
                   id="bookingAmountReceived"
                   type="text"
-                  value={bookingAmountReceived}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (/^\d*$/.test(value)) {
-                      setBookingAmountReceived(Number(e.target.value));
-                      setErrors((prev) => ({
-                        ...prev,
-                        bookingAmountReceived: "",
-                      }));
-                    }
-                  }}
+                  value={booking.advancePayment || 0}
+                  disabled
                   className={cn(
                     inputClassName("bookingAmountReceived"),
                     "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
@@ -732,27 +748,6 @@ export default function BookingStartClient({
                 )}
               </div>
             </div>
-            <div>
-              <Label className="max-sm:text-xs" htmlFor="securityDeposit">
-                Security Deposit <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                type="text"
-                id="securityDeposit"
-                value={securityDeposit}
-                onChange={(e) => {
-                  setSecurityDeposit(e.target.value);
-                  setErrors((prev) => ({ ...prev, securityDeposit: "" }));
-                }}
-                className={inputClassName("securityDeposit")}
-              />
-              {errors.securityDeposit && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.securityDeposit}
-                </p>
-              )}
-            </div>
-
             <div>
               <Label className="max-sm:text-xs" htmlFor="notes">
                 Notes
@@ -834,19 +829,19 @@ export default function BookingStartClient({
           />
           <label
             htmlFor="terms"
-            className="text-sm font-medium text-blue-400 underline cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            className="text-sm font-medium text-blue-400 flex items-center gap-1 underline cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
-            <Link href="/terms-and-conditions">
               I agree to all the terms and conditions{" "}
+            <Link href="/policy">
+            <Redirect className="w-3 h-3 fill-blue-400 stroke-[3px] stroke-blue-400"/>
             </Link>
-            <span className="text-red-500">*</span>
           </label>
         </div>
         {errors.terms && (
           <p className="text-red-500 text-sm mt-1">{errors.terms}</p>
         )}
 
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center fixed bottom-0 left-0 z-10 p-2 border-t border-border bg-background w-full justify-center space-x-2">
           {isLoading ? (
             <div className="w-full max-w-[500px] border-2 border-border rounded-lg relative">
               <div
@@ -868,24 +863,186 @@ export default function BookingStartClient({
               </div>
             </div>
           ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={isLoading}
-              className={`bg-blue-600 active:scale-95 text-white hover:bg-opacity-80 w-full ${isLoading && "rounded-e-none cursor-not-allowed opacity-50"}`}
-            >
-              <span>Create</span>
-            </Button>
+            <>
+              <Button
+                onClick={() => router.push("/booking/" + bookingId)}
+                className="bg-red-600 dark:bg-red-400 active:scale-95 sm:max-w-[200px] text-card text-white hover:bg-red-500 w-full"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={isLoading}
+                className={`bg-blue-600 active:scale-95 sm:max-w-[200px] text-white hover:bg-opacity-80 w-full ${isLoading && "rounded-e-none cursor-not-allowed opacity-50"}`}
+              >
+                <span>Pay & Proceed</span>
+              </Button>
+            </>
           )}
-          {!isLoading && (
-            <Button
-              onClick={() => router.push("/booking/" + bookingId)}
-              className="bg-red-600 dark:bg-red-400 active:scale-95 text-card text-white hover:bg-red-500 w-full"
-            >
-              Cancel
-            </Button>
-          )}
+          
         </div>
+        <div className="h-6 w-full"/>
       </div>
     </div>
   );
+}
+
+const PaymentDialog = ({open, setOpen,onSuccess,bookingId,amount}:{
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onSuccess: () => void;
+  bookingId: string;
+  amount:number
+}) => {
+  const [selectedMethod, setSelectedMethod] = useState<"upi" | "card" | "netbanking" | "cash">();
+  const [totalAmount, setTotalAmount] = useState(amount);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const onCashPayment = async() => {
+    try{
+      await axios.post(`${BASE_URL}/api/v1/customer/booking-payment/${bookingId}`,{
+        paymentMethod: "cash",
+        advancePayment: totalAmount,
+        status:"Ongoing"
+      },{
+        headers: {
+          authorization: `Bearer ` + localStorage.getItem("token"),
+        }
+      });
+      setOpen(false);
+      setIsLoading(false);
+      onSuccess();
+    }
+    catch(error){
+      console.log(error);
+      setIsLoading(false);
+    }
+  }
+
+  return (
+  <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className=" max-sm:rounded-sm  bg-muted border-border p-2">
+          <DialogHeader className="items-start p-4">
+            <DialogTitle className="text-center mb-2">Checkout</DialogTitle>
+            <DialogDescription className="text-grey-500 mt-1 flex justify-center">
+              Choose the payment method
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center w-full">Pay using</div>
+            <div className="w-full h-fit overflow-hidden sm:px-4 flex justify-between gap-1 mx-auto ">
+                <div 
+                onClick={() =>{
+                  setSelectedMethod("upi")
+                  setTotalAmount(amount)
+                }}
+                className={cn("py-2 sm:p-2 overflow-hidden cursor-pointer border-2 border-transparent flex flex-col gap-2 w-full rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                        selectedMethod === "upi" && "border-blue-500 text-blue-500"
+                )}>
+                  <UPI className = {cn("w-12 h-12 fill-none flex-shrink-0 stroke-[10px] stroke-foreground",
+                        selectedMethod === "upi" && "stroke-blue-500"
+                  )}/>
+                  <p className="text-xs sm:text-sm mb-3 font-medium">UPI</p>
+                </div>
+                <div 
+                onClick={() =>{
+                  setSelectedMethod("card")
+                  setTotalAmount(amount+amount*0.02)
+                }}
+                className={cn("py-2 sm:p-2 overflow-hidden cursor-pointer border-2 border-transparent flex flex-col gap-2 w-full rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                      selectedMethod === "card" && "border-blue-500 text-blue-500"
+                )}>
+                  <CreditCard className = {cn("w-12 h-12 flex-shrink-0 fill-foreground",
+                      selectedMethod === "card" && "fill-blue-500"
+                  )}/>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs sm:text-sm font-medium">Card</p>
+                    <span className="text-[8px] sm:text-[10px] -mt-2">{"(Extra 2% fee)"}</span>
+                  </div>
+                </div>
+                <div 
+                onClick={() =>{
+                  setSelectedMethod("netbanking")
+                  setTotalAmount(amount+amount*0.02)
+                }}
+                className={cn("py-2 sm:p-2 overflow-hidden cursor-pointer border-2 border-transparent flex flex-col gap-2 w-full rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                    selectedMethod === "netbanking" && "border-blue-500 text-blue-500"
+                )}>
+                  <NetBanking className = {cn("w-12 h-12 flex-shrink-0 fill-foreground",
+                    selectedMethod === "netbanking" && "fill-blue-500"
+                  )}/>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs sm:text-sm font-medium">Net banking</p>
+                    <span className="text-[8px] sm:text-[10px] -mt-2">{"(Extra 2% fee)"}</span>
+                  </div>
+                </div>
+              <div 
+              onClick={() =>{
+                setSelectedMethod("cash")
+                setTotalAmount(amount)
+              }}
+              className={cn("py-2 sm:p-2 overflow-hidden cursor-pointer border-2 border-transparent flex flex-col gap-2 w-full rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                  selectedMethod === "cash" && "border-blue-500 text-blue-500"
+                )}>
+                <Cash className = {cn("w-12 h-12 fill-foreground flex-shrink-0",
+                  selectedMethod === "cash" && "fill-blue-500"
+                )}/>
+                <p className="text-xs sm:text-sm mb-3 font-medium">Cash</p>
+              </div>
+            </div>
+            {selectedMethod === "cash" &&
+            <div className="w-full text-sm flex justify-center">
+              <span>Please pay cash amount to owner</span>
+            </div>
+            }
+            {selectedMethod && 
+            <div 
+            onClick={() => setIsLoading(true)}
+            className="w-full flex justify-center">
+              <div className="w-fit h-fit">
+                {selectedMethod !== "cash" ?
+                  <PaymentButton
+                    selectedMethod={selectedMethod}
+                    totalAmount={totalAmount}
+                    onSuccess={onSuccess}
+                    bookingId={bookingId}
+                    disabled={isLoading}
+                    setIsLoading={setIsLoading}
+                    status="Ongoing"
+                    className="text-white p-2 bg-primary flex items-center justify-center gap-2 active:scale-95 hover:bg-opacity-80 rounded-sm text-sm font-medium w-full max-w-[200px]"
+                  >
+                    {isLoading ?
+                    <Loader2/>
+                    :
+                    <>
+                      Pay
+                      <span className="flex items-center">
+                        <IndianRupee className="w-3 h-3"/>
+                        {totalAmount}
+                      </span>
+                    </>
+                    }
+                  </PaymentButton>
+                  :
+                  <Button
+                    className="text-white p-2 bg-primary active:scale-95 hover:bg-opacity-80 rounded-sm w-full max-w-[200px]"
+                    onClick={onCashPayment}
+                  >
+                    {isLoading ?
+                    <Loader2/>
+                    :
+                    <>
+                      Pay
+                      <span className="flex items-center">
+                        <IndianRupee className="w-3 h-3"/>
+                        {totalAmount}
+                      </span>
+                    </>
+                    }
+                  </Button>
+                }
+                </div>
+            </div>}
+        </DialogContent>
+      </Dialog>
+  )
 }

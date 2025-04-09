@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ArrowRight from "@/public/right_arrow.svg";
-import BackArrow from "@/public/back-arrow.svg";
+import BackButton from "@/public/back-button.svg";
 import CarIcon from "@/public/car-icon.svg";
 import Cancel from "@/public/cancel.svg";
 import { Booking } from "./page";
@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
+import { Check, ChevronDown, ComputerIcon, Copy, IndianRupee, MoreVertical } from "lucide-react";
 import { useEffect, useState } from "react";
 import ActionDialog from "@/components/action-dialog";
 import axios from "axios";
@@ -24,6 +24,10 @@ import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogTitle,DialogFooter, DialogHeader, DialogOverlay } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import Loader from "@/components/loader";
+import PaymentButton from "@/components/razorpay-button";
+import { calculateCost, cn } from "@/lib/utils";
+import UPI from "@/public/upi-bhim.svg";
+import CreditCard from "@/public/credit-card.svg";
 
 interface BookingDetailsClientProps {
   booking: Booking;
@@ -45,6 +49,23 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   const [isOTPDialogOpen,setIsOTPDialogOpen] = useState(false);
   const [otp,setOtp] = useState("");
   const [isLoading,setIsLoading] = useState(false);
+  const [advancePayment,setAdvancePayment] = useState(booking.advancePayment || 0);
+  const [paymentMethod,setPaymentMethod] = useState<string>(booking.paymentMethod || "");
+  const [isPayment,setIsPayment] = useState(false);
+  const [copied, setCopied] = useState(false)
+  const phoneNumber = "+91 79995 51582"
+  const emailAddress = "jcrahmedabad@gmail.com";
+
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    toast({
+      title: "Phone number copied!",
+      duration:1000
+    })
+    setTimeout(() => setCopied(false), 2000)
+  }
 
    function getHeader(
     status: string,
@@ -58,14 +79,15 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
     const endDateTime = new Date(endDate);
     const [startHour, startMinute] = startTime.split(":").map(Number);
     const [endHour, endMinute] = endTime.split(":").map(Number);
+    const type = booking.type[0].toUpperCase() + booking.type.slice(1);
     startDateTime.setHours(startHour, startMinute, 0, 0);
     endDateTime.setHours(endHour, endMinute, 0, 0);
     const currDate = new Date();
     if (status === "Upcoming") {
       if (startDateTime >= currDate) {
-        headerText = "Pickup scheduled on";
+        headerText = type + " scheduled on";
       } else {
-        headerText = "Pickup was scheduled on";
+        headerText = type + " was scheduled on";
       }
     } else if (status === "Ongoing") {
       if (endDateTime < currDate) {
@@ -74,15 +96,17 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
         headerText = "Return scheduled by";
       }
     } else if (status === "Completed") {
-      headerText = "Booking ended at";
+      headerText = "Trip ended at";
     }
     else if (status === "Cancelled") {
       if(booking.cancelledBy === "guest"){
-        headerText = "Booking was cancelled by you";
+        headerText = "Trip was cancelled by you";
       }
       else if(booking.cancelledBy === "host"){
-        headerText = "Booking was cancelled by owner";
+        headerText = "Trip was cancelled by owner";
       }
+    } else if (status === "Requested") {
+      headerText = "Booking requested by";
     }
     return headerText;
   }
@@ -157,6 +181,19 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
     }
   };
 
+ 
+  const totalAmount = calculateCost(booking.start,booking.end,booking.startTime,booking.endTime,booking.dailyRentalPrice);
+  const charge = (paymentMethod === "card" || paymentMethod === "netbanking") ? totalAmount*0.02 : 0;
+  const amountRemaining = booking.totalPrice ? (booking.totalPrice - (advancePayment || 0)) : 0;
+  
+  const isSomeDetails = booking.odometerReading || booking.endodometerReading
+  || (booking.documents && booking.documents.length >0) || booking.selfieUrl || (booking.carImages && booking.carImages.length > 0);
+
+  const onPayment = (method:string) => {
+    setAdvancePayment(booking.totalPrice || 0);
+    setPaymentMethod(method);
+  }
+
   const renderFileList = (type: "documents" | "photos" | "selfie") => {
     return (
       <div className="mt-2 text-sm">
@@ -202,19 +239,19 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   };
 
   return (
-    <div className="pt-16 sm:pt-12 relative z-0">
+    <div className="pt-[75px] sm:pt-12 relative z-0">
       {isLoading &&
       <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/20 backdrop-blur-sm z-50">
           <Loader/>
       </div>
       }
-      <div className="flex pt-2 items-center justify-between px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white">
+      <div className="fixed top-[75px] sm:top-12 w-full left-0 flex pt-3 bg-background z-10 items-center justify-between px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white">
         <div
           className="mr-2 rounded-md font-bold  cursor-pointer dark:hover:bg-gray-800 hover:bg-gray-200"
           onClick={() => router.push("/bookings")}
         >
           <div className="h-10 w-9 flex border-border border justify-center items-center rounded-md ">
-            <BackArrow className="h-7 w-7 stroke-0 fill-gray-800 dark:fill-blue-300" />
+            <BackButton className="h-7 w-7 stroke-0 fill-gray-800 dark:fill-blue-300" />
           </div>
         </div>
         <div className="text-center">
@@ -250,9 +287,59 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
           <div className="w-8 h-8"/>
           }
       </div>
+      <div className="w-full h-[70px]"/>
 
-      <div className="px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted">
-        <div className="flex justify-between items-center">
+        <div className="w-full flex py-2 justify-center">
+          {(totalAmount - advancePayment) > 0 && (bookingStatus !== "Requested" ||  "Completed") &&
+          <div className=" flex flex-col items-center justify-center w-full">
+            <Button 
+            onClick={() => {
+              setIsPayment(!isPayment);
+            }}
+            className="p-2 cursor-pointer rounded-sm text-sm text-white active:scale-95 bg-primary hover:bg-opacity-10">
+              Proceed with payment
+              <ChevronDown className={`w-4 transition-all duration-300 ease-in-out h-4 ${isPayment ? "rotate-180" : ""}`}/>
+            </Button> 
+            <div className={cn("w-full h-fit max-w-[360px] h-fit  overflow-hidden p-2 sm:px-4 flex justify-between mx-auto ",
+            )}>
+              <PaymentButton selectedMethod="upi" totalAmount={totalAmount - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
+                <div className={cn("p-2 overflow-hidden  flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                  !isPayment ? 'h-0 p-0' : 'h-[110px]'
+                )}>
+                  <UPI className = "w-12 h-12 fill-none flex-shrink-0 stroke-[10px] stroke-foreground"/>
+                  <p className="text-sm mb-3">UPI</p>
+                </div>
+              </PaymentButton>
+              <PaymentButton selectedMethod="card" totalAmount={(totalAmount + totalAmount*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
+                <div className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                  !isPayment ? 'h-0 p-0' : 'h-[110px]'
+                )}>
+                  <CreditCard className = "w-12 h-12 flex-shrink-0 fill-foreground"/>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm ">Card</p>
+                    <span className="text-[10px] -mt-2">{"(Extra 2% fee)"}</span>
+                  </div>
+                </div>
+              </PaymentButton>
+              <PaymentButton selectedMethod="netbanking" totalAmount={(totalAmount + totalAmount*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
+                <div className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                  !isPayment ? 'h-0 p-0' : 'h-[110px]'
+                )}>
+                  <ComputerIcon className = "w-12 h-12 flex-shrink-0"/>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm ">Net banking</p>
+                    <span className="text-[10px] -mt-2">{"(Extra 2% fee)"}</span>
+                  </div>
+                </div>
+              </PaymentButton>
+            </div>
+        </div>}
+        </div>
+      <div className=" relative px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted">
+        <div className="  flex justify-between items-center">
+          <div className="absolute top-[10%] text-sm left-0 rounded-e-lg bg-blue-400 border-border p-1 px-2">
+            {booking.type}
+          </div>  
           <div>
             <p className="text-sm text-blue-500">
               {getHeader(
@@ -332,10 +419,18 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
           </div>
         </div>
         <hr className="my-4 border-gray-200 dark:border-muted" />
-        <div>
-          <p className="text-sm text-blue-500 mb-1">Booking Status</p>
+        <div className="grid grid-cols-2 items-center sm:gap-6">
           <div>
-              <p className={` `}>{bookingStatus}</p>
+            <p className="text-sm text-blue-500 mb-1">Booking Status</p>
+            <div>
+                <p className={` `}>{bookingStatus}</p>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm text-blue-500 mb-1">Payment Method</p>
+            <div>
+                <p className={` `}>{paymentMethod}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -343,34 +438,109 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
         <h3 className="text-lg font-semibold mb-4 ">
           Price and Payment Details
         </h3>
-        <div className="grid grid-cols-2 gap-4 sm:gap-6">
-          <div>
-            <p className="text-sm text-blue-500 mb-1">24 Hr Price</p>
-              <p className="text-sm">{booking.dailyRentalPrice}</p>
-          </div>
-          {booking.securityDeposit && (
-            <div>
-              <p className="text-sm text-blue-500">Security Deposit</p>
-                <span className="text-sm">{booking.securityDeposit}</span>
+        <div className="rounded-lg bg-gray-50 dark:bg-card p-4 space-y-2 w-full max-w-[500px] mx-auto">
+            <div className="flex justify-between">
+              <span className="text-sm">Daily Rate:</span>
+              <span className="text-sm font-medium flex items-center gap-1">
+                <IndianRupee className="w-4 h-4"/>
+                {booking.dailyRentalPrice.toFixed(2)}
+              </span>
             </div>
-          )}
-        </div>
-        <hr className="my-4 border-gray-200 dark:border-muted" />
-        <div className="grid grid-cols-2 gap-4 sm:gap-6">
-          <div>
-            <p className="text-sm text-blue-500">Payment Amount</p>
-            <span className="text-sm">{booking.totalPrice}</span>
+            {booking.totalPrice &&
+            <div className="flex justify-between">
+              <span className="text-sm">Duration:</span>
+              <span className="text-sm font-medium">{(totalAmount/booking.dailyRentalPrice).toFixed(2)} days</span>
+            </div>}
+            <div className="flex justify-between">
+              <span className="text-sm">Delivery charges:</span>
+              <span className="text-sm font-medium flex items-center gap-1">
+                <IndianRupee className="w-4 h-4"/>
+                {(booking.type === "home delivery" ? 1000 : 0).toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm">Merchant fees:</span>
+              <span className="text-sm font-medium flex items-center gap-1">
+                <IndianRupee className="w-4 h-4"/>
+                {charge.toFixed(2)}
+              </span>
+            </div>
+            {booking.totalPrice &&
+            <div className="flex justify-between border-t pt-2 mt-2">
+              <span className="font-medium">Total Amount:</span>
+              <span className="font-bold flex items-center gap-1">
+                <IndianRupee className="w-4 h-4"/>
+                {booking.totalPrice.toFixed(2)}</span>
+            </div>}
+            
+            <div className="flex justify-between">
+              <span className="text-sm">Amount paid:</span>
+              <span className="text-sm font-medium flex items-center gap-1">
+                <IndianRupee className="w-4 h-4"/>
+                {(advancePayment).toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between border-t pt-2 mt-2">
+              <span className="font-medium">Amount remaining:</span>
+              {amountRemaining > 0 ?
+              <span className=" font-bold flex items-center gap-1">
+                <IndianRupee className="w-4 h-4"/>
+                  {amountRemaining.toFixed(2)}
+              </span>
+              :
+              <span className=" font-bold flex items-center gap-1">
+                Fully Paid
+              </span>
+              }
+            </div>
           </div>
-          <div>
-            {booking.paymentMethod && (
+        <div className="flex items-center gap-3">
+            <span className="text-sm">Security deposit:</span>
+            {booking.securityDeposit ?
+                <span className="text-sm font-medium flex items-center gap-1">
+                  <IndianRupee className="w-4 h-4"/>
+                  {booking.securityDeposit}
+                </span>
+                :
+                <span className="text-sm italic font-medium flex items-center gap-1">
+                    No security deposit
+                </span>}
+            </div>
+      </div>
+      <div className="px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted">
+        <h3 className="text-lg font-semibold mb-4 ">Owner Details</h3>
+        <div className="grid grid-cols-2 gap-2 sm:gap-6">
+          <div className="space-y-4">
               <div>
-                <p className="text-sm text-blue-500">Payment Method</p>
-                  <span className="text-sm">{booking.paymentMethod}</span>
+                <p className="text-sm text-blue-500">Owner Name</p>
+                  <span className="text-sm">Naveen Jain</span>
               </div>
-            )}
+              <div>
+                <p className="text-sm text-blue-500">Phone</p>
+                <div className="flex items-center">
+                  <span className="text-sm">{phoneNumber}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(phoneNumber)}
+                    className="h-8 px-2"
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+          </div>
+          <div className="space-y-4">
+              <div>
+                <h3 className="font-medium">Email</h3>
+                <a href={`mailto:${emailAddress}`} className="text-primary text-xs sm:text-sm hover:underline">
+                  {emailAddress}
+                </a>
+              </div>
           </div>
         </div>
       </div>
+      {isSomeDetails &&
       <div className="px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted">
         <h3 className="text-lg font-semibold mb-4 ">Some more details</h3>
         <div className="grid grid-cols-2 gap-4 sm:gap-6">
@@ -381,31 +551,28 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                   <span className="text-sm">{booking.odometerReading}</span>
               </div>
             )}
-            {bookingStatus !== "Upcoming" && (
+            {bookingStatus !== "Upcoming" && booking.selfieUrl && (
               <div>
                 <p className="text-xs sm:text-sm text-blue-500">
                   Selfie with car
                 </p>
                 <div>{renderFileList("selfie")}</div>
-                {!booking.selfieUrl && (
-                  <div className="h-[20px] w-full" />
-                )}
               </div>
             )}
+            {booking.documents && booking.documents?.length > 0 && (
             <div>
               <div className="flex sm:gap-1 items-center">
                 <p className="text-xs sm:text-sm text-blue-500">
                   Aadhar Card and Driving License
                 </p>
               </div>
-              {booking.documents && (
+              
                 <div>
                   <div className="mt-2 text-sm">
                     {renderFileList("documents")}
                   </div>
                 </div>
-              )}
-            </div>
+            </div>)}
           </div>
           <div className="space-y-4">
             {booking.endodometerReading && (
@@ -429,28 +596,36 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                   <span className="text-sm">{booking.notes}</span>
               </div>
             )}
-            {bookingStatus !== "Upcoming" && (
+            {bookingStatus !== "Upcoming" && booking.carImages && booking.carImages.length >0 && (
               <div>
                 <div className="flex sm:gap-1 items-center">
                   <p className="text-xs sm:text-sm text-blue-500">
                     Photos Before pick-up
                   </p>
                 </div>
-                {booking.carImages && booking.carImages.length > 0 && (
                   <div>
                     <div className="mt-2 text-sm">
                       {renderFileList("photos")}
                     </div>
                   </div>
-                )}
               </div>
             )}
           </div>
         </div>
-        <div className="w-full flex justify-center">
-          {bookingStatus === "Upcoming" && (
+        
+      </div>
+      }
+        {bookingStatus === "Upcoming" ? (
+        <div className="w-full fixed bg-background border-t border-border z-10 bottom-0 left-0 flex justify-center p-2 flex items-center gap-2">
+            <div className="flex sm:hidden items-center flex-col w-1/3">
+              <span className="text-primary italic text-[8px] whitespace-nowrap">Amount Remaining</span>
+              {amountRemaining > 0 ?
+              <span className="text-sm font-bold text-md">{amountRemaining.toFixed(2)}</span>:
+              <span className="text-sm italic text-md">Fully Paid</span>
+              }
+            </div>
             <Button
-              className="px-4 py-4 max-sm:w-full active:scale-95 bg-blue-600 dark:text-black text-blue-100  shadow-lg"
+              className="px-4 py-4 sm:min-w-[400px] max-sm:w-full active:scale-95 bg-blue-600 text-white  shadow-lg"
               onClick={() => {
                 setIsOTPDialogOpen(true);
                 
@@ -458,15 +633,16 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             >
               <span className="">Start Booking</span>
             </Button>
-          )}
         </div>
+        ):
+        <div className="w-full h-[50px]"/>
+        }
         <ActionDialog
           isDialogOpen={isDialogOpen}
           setIsDialogOpen={setIsDialogOpen}
           action={"Cancel"}
           handleAction={handleCancel}
         />
-      </div>
       <div className="relative z-50">
         <Dialog open={isOTPDialogOpen} onOpenChange={setIsOTPDialogOpen}>
           <DialogOverlay className="  backdrop-blur-lg"/>

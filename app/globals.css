@@ -29,11 +29,13 @@
     --animate-down-right: downRight 2s ease-in-out infinite;
     --animate-down-left: downLeft 2s ease-in-out infinite;
     --pulse: pulse 2s ease-in-out infinite;
+    --bounceY: bounceY 1s ease-in-out infinite;
 
     transition:
       background-color 0.1s ease-in-out,
       color 0.1s ease-in-out;
   }
+  
   @keyframes upRight{
     0%{
       transform: translate(0,0);
@@ -52,9 +54,15 @@
     }
   }
 
-  @keyframes pulse {
-    50% {
-      opacity: 0.5;
+  @keyframes bounceY{
+    0%{
+      transform: translateY(-100%);
+    }
+    50%{
+      transform: translateY(0);
+    }
+    100%{
+      transform: translateY(-100%);
     }
   }
   @keyframes downRight{
@@ -144,6 +152,9 @@
   }
   .animate-down-left {
     animation: var(--animate-down-left);
+  }
+  .animate-bounceY {
+    animation: var(--bounceY);
   }
   .pulse {
     animation: var(--pulse);

@@ -32,7 +32,9 @@ export default function AddTime({
   };
 
   return (
-    <div className="relative">
+    <div
+     style={{zIndex:0}}
+     className="relative">
       <Select
         value={selectedTime}
         onValueChange={setSelectedTime}
@@ -48,7 +50,7 @@ export default function AddTime({
         >
           {selectedTime}
         </SelectTrigger>
-        <SelectContent className="h-40 min-w-0 z-50 p-0 border-border overflow-y-auto bg-background scrollbar-hide">
+        <SelectContent className="h-40 min-w-0 z-0 realtive p-0 border-border overflow-y-auto bg-background scrollbar-hide">
           <div className="p-1 dark:border-muted flex bg-transparent flex-col items-center scrollbar-hide overflow-x-hidden rounded-md text-popover-foreground">
             {generateTimeIntervals().map((time) => (
               <SelectItem

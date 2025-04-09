@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import CarIcon from "@/public/car-icon.svg";
-import BackArrow from "@/public/back-arrow.svg";
+import BackButton from "@/public/back-button.svg";
 
 export default function CarNotFound() {
   return (
@@ -29,7 +29,7 @@ export default function CarNotFound() {
         <CardFooter className="flex flex-col space-y-4">
           <Button asChild className="w-full">
             <Link href="/profile/manage-garrage">
-              <BackArrow className=" h-7 w-4 stroke-black fill-black" />
+              <BackButton className=" h-7 w-4 stroke-black fill-black" />
               Back to Car List
             </Link>
           </Button>

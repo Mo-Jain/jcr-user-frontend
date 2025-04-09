@@ -108,7 +108,7 @@ export default function BookingDetails() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-0 py-2 pb-16 sm:pb-8">
+      <main className="container mx-auto px-0 py-2 px-3">
         <Suspense
           fallback={
             <div>

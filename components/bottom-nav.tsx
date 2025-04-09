@@ -60,6 +60,7 @@ export function BottomNav() {
     setShortName(gethortName());
   }, [setShortName,gethortName]);
 
+  if(pathname.startsWith("/booking/")) return null;
 
   return (
     <div className="relative">

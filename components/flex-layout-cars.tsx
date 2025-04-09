@@ -4,6 +4,7 @@ import { CarCard } from "./car-card";
 import {ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Car } from "@/lib/types";
+import LoaderOverlay from "./loader-overlay";
 
 const CARD_WIDTH = 264; // Width of each CarCard
 const SCROLL_DURATION = 300; // Duration of the scroll animation in ms
@@ -11,6 +12,7 @@ const SCROLL_DURATION = 300; // Duration of the scroll animation in ms
 const FlexLayoutCars = ({cars}:{cars:Car[]}) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [isLoading,setIsLoading] = useState(false);
 
     useEffect(() => {
         updateScrollButtons();
@@ -20,6 +22,18 @@ const FlexLayoutCars = ({cars}:{cars:Car[]}) => {
         if (!scrollRef.current) return;
         setCanScrollLeft(scrollRef.current.scrollLeft > 0);
     };
+
+    useEffect(() => {
+        if(isLoading){
+        document.documentElement.classList.add("no-scroll");
+        }else {
+        document.documentElement.classList.remove("no-scroll");
+        }
+    
+        return () => {
+        document.documentElement.classList.remove("no-scroll");
+        };
+    }, [isLoading]);
 
     
 
@@ -58,7 +72,11 @@ const FlexLayoutCars = ({cars}:{cars:Car[]}) => {
         smoothScroll(newScrollPosition);
     };
 
+    
+
   return (
+    <>
+    {isLoading && <LoaderOverlay />}
     <div className="mx-2">
         <div className="relative">
             <div
@@ -68,16 +86,18 @@ const FlexLayoutCars = ({cars}:{cars:Car[]}) => {
                 >
                 {cars.map((car,index) =>{
                     return (
-                    <Link
-                    href={`/car/${car.id}`}
-                    key={index}
-                    className="transform transition-all duration-300 hover:scale-105"
-                    >
-                    <CarCard
-                        car={car}
-                        flexlayout={true}
-                    />
-                    </Link>
+                    <div key={index} onClick={() => setIsLoading(true)}>
+                        <Link
+                            href={`/car/${car.id}`}
+                            
+                            className="transform transition-all duration-300 hover:scale-105"
+                          >
+                            <CarCard
+                              car={car}
+                              flexlayout={true}
+                            />
+                        </Link>
+                    </div>
                 )})}
                 {canScrollLeft &&
                     <div 
@@ -95,6 +115,7 @@ const FlexLayoutCars = ({cars}:{cars:Car[]}) => {
             </div>
         </div>
     </div>
+    </>
   )
 };
 

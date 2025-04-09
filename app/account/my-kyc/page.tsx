@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import BackArrow from "@/public/back-arrow.svg";
+import BackButton from "@/public/back-button.svg";
 import { useState, useRef, useEffect, useCallback } from "react"
 import { User, Phone, MapPin, FileText, Upload, X, Edit,  Eye,  Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -77,6 +77,8 @@ export default function KYCPage() {
   const [hasUploaded,setHasUploaded] = useState(false);
   const {kycStatus,setKycStatus} = useUserStore();
   const [errors, setErrors] = useState<FormErrors>({});
+  const [contact,setContact] = useState<string>("");
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,6 +101,7 @@ export default function KYCPage() {
     if (customer) {
       if(customer.address) setAddress(customer.address);
       if(customer.email) setEmail(customer.email);
+      if(customer.contact) setContact(customer.contact);
       if(customer.documents){
         const newAadharPreviews:{url:string,fileIndex:number}[] = [];
         const newLicensePreviews:{url:string,fileIndex:number}[] = [];
@@ -354,7 +357,7 @@ export default function KYCPage() {
       `${BASE_URL}/api/v1/customer/${customer.id}`,
       {
         name: customer.name,
-        contact: customer.contact,
+        contact: contact !== "" ? contact : undefined,
         address: address,
         email:email,
         documents: updatedDocuments.length > 0 ? updatedDocuments : undefined,
@@ -430,7 +433,7 @@ export default function KYCPage() {
                 onClick={() => router.push("/account")}
                 className=" flex mr-2 mt-1 -ml-2 bg-transparent active:scale-95 w-fit rounded-md cursor-pointer shadow-none justify-start text-black border dark:border-card border-gray-200 hover:bg-gray-200 dark:hover:bg-card "
                 >
-                <BackArrow className="h-6 w-6 stroke-0 fill-gray-800 dark:fill-blue-300" />
+                <BackButton className="h-6 w-6 stroke-0 fill-gray-800 dark:fill-blue-300" />
             </Button>
             <h1 className="text-3xl font-bold">My Account </h1>
           </div>
@@ -483,7 +486,15 @@ export default function KYCPage() {
                     <Label htmlFor="contact" className="flex items-center gap-2">
                       <Phone className="h-4 w-4" /> Contact Number
                     </Label>
-                    <Input id="contact" value={customer.contact} disabled className="bg-muted/50" />
+                    <Input id="contact" value={contact}
+                    maxLength={10}
+                     onChange={(e) => {
+                      const value = e.target.value;
+                       if (/^\d*$/.test(value)) {
+                        setContact(value);
+                      }
+                    }} 
+                    disabled={!isEditable || customer.contact === ""} className="bg-muted/50" />
                   </div>
                 </div>
                 <div className="">

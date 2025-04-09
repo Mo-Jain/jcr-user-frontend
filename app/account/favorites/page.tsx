@@ -1,9 +1,10 @@
 'use client';
+
 import Link from "next/link";
 import { useFavoriteStore } from "@/lib/store";
 import { CarCard } from "@/components/car-card";
 import { Button } from "@/components/ui/button";
-import BackArrow from "@/public/back-arrow.svg";
+import BackButton from "@/public/back-button.svg";
 import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 
@@ -19,7 +20,7 @@ const FavoriteSection = () => {
                         onClick={() => router.push("/account")}
                         className=" flex mx-4 bg-transparent active:scale-95 w-fit rounded-md cursor-pointer shadow-none justify-start text-black border dark:border-card border-gray-200 hover:bg-gray-200 dark:hover:bg-card "
                         >
-                        <BackArrow className="h-6 w-6 stroke-0 fill-gray-800 dark:fill-blue-300" />
+                        <BackButton className="h-6 w-6 stroke-0 fill-gray-800 dark:fill-blue-300" />
                     </Button>
                     <h1
                     style={{ fontFamily: "var(--font-equinox), sans-serif" }}

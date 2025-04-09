@@ -13,34 +13,40 @@ import InitiateScreen from "./InitiateScreen";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import SkeletonPreLoader from "./skeleton-loader";
+import { useSession } from "next-auth/react";
 
 const Initiate = () => {
   const { setName, setImageUrl,setUserId,setKycStatus,setKycStatusFlag } = useUserStore();
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { isServerLoading, setIsServerLoading,isInitiateComplete } = useServerStore();
+  const {isServerLoading,setIsServerLoading, isInitiateComplete } = useServerStore();
   const pathname = usePathname();
   const {setFavoriteCars} = useFavoriteStore();
   const {setCars,setIsCarLoading} = useCarStore();
+  const {data:session,status} = useSession();
+  const [isLoading,setIsLoading] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       if( pathname.includes("/test")) return;
       try {
+        setIsServerLoading(true);
         setIsLoading(true);
-        setIsCarLoading(true);
-          setIsServerLoading(true);
-          const res = await axios.get(`${BASE_URL}/api/v1/customer/me`, {
+        if(session){
+          setIsCarLoading(true);
+          setName(session.user.name);
+          setImageUrl(session.user.image);
+          setUserId(Number(session.user.id));
+          const res = await axios.get(`${BASE_URL}/api/v1/customer/kyc-status`, {
             headers: {
               "Content-type": "application/json",
               authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           });
-          setName(res.data.name);
-          setImageUrl(res.data.imageUrl);
-          setUserId(res.data.id);
-          setKycStatus(res.data.customer.kycStatus);
-          setKycStatusFlag(res.data.customer.approvedFlag);
-          if(res.data.customer.kycStatus === "pending") setKycStatusFlag(true);
+          setKycStatus(res.data.kycStatus);
+          setKycStatusFlag(res.data.approvedFlag);
+          if(res.data.kycStatus === "pending"){
+            setKycStatusFlag(true);
+          }
           const res1 = await axios.get(`${BASE_URL}/api/v1/customer/car/all`, {
             headers: {
               authorization: `Bearer ` + localStorage.getItem("token"),
@@ -54,25 +60,25 @@ const Initiate = () => {
               },
             });
           setFavoriteCars(res2.data.favoriteCars);
-          setIsServerLoading(false);
+        }
       } catch (error) {
           console.log(error);
-          setIsServerLoading(false);
           setIsCarLoading(false);
       }
+      setIsLoading(false);
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router,setName,setImageUrl,setIsServerLoading,setUserId]);
+  }, [router,setName,setImageUrl,setUserId,status]);
 
   if(pathname.includes("/test")) return null;
 
-  if(isInitiateComplete && isServerLoading && pathname==="/") {
+  if(isInitiateComplete && isServerLoading && isLoading && (pathname==="/"|| pathname==="/auth")) {
     return <SkeletonPreLoader/>
   } 
-  else if (isLoading){
-    return <SplashScreen setIsLoading={setIsLoading}/>
-  }  
+  else if (isServerLoading){
+    return <SplashScreen/>
+  }
   return <InitiateScreen/>;
 };
 

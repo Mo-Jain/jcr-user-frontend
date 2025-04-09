@@ -172,7 +172,7 @@ export default function ContactPage() {
                   allowFullScreen
                   loading="lazy"
                   className="w-full h-full"
-                ></iframe>
+                />
               </div>
             </CardContent>
           </Card>

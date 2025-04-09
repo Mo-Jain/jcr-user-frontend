@@ -11,6 +11,9 @@ import Shield from "@/public/shield1.svg";
 import ContactUs from "@/public/contact-us.svg";
 import { useCarStore, useFavoriteStore, useUserStore } from "@/lib/store";
 import { Star } from "lucide-react";
+import { signOut } from "next-auth/react";
+import LoaderOverlay from "@/components/loader-overlay";
+import { useState } from "react";
 
 
 export default function Profile() {
@@ -18,8 +21,9 @@ export default function Profile() {
   const { name, imageUrl, setName, setImageUrl,setUserId,kycStatus } = useUserStore();
   const {setCars} = useCarStore();
   const {setFavoriteCars} = useFavoriteStore();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
     localStorage.setItem("token", "");
     setName("");
     setImageUrl("");
@@ -27,10 +31,12 @@ export default function Profile() {
     setCars([]);
     setFavoriteCars([]);
     router.push("/")
+    await signOut({ redirect: false });
   };
 
   return (
     <div className="min-h-screen h-full pt-16 bg-background">
+      {isLoading && <LoaderOverlay />}
       <main className="container mx-auto px-4 py-8 pb-16 sm:pb-8">
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="relative">
@@ -77,22 +83,24 @@ export default function Profile() {
         <div>
           {name !== "" && (
             <Card className="overflow-hidden bg-muted my-4 mt-6 dark:border-border hover:shadow-md transition-shadow ">
-              <CardContent className="p-1 text-gray-600 dark:text-gray-400">
+              <CardContent 
+              onClick={() => setIsLoading(true)}
+              className="p-1 text-gray-600 dark:text-gray-400">
                 <div
                   className="flex items-center justify-between p-2 py-4 cursor-pointer rounded-md dark:hover:bg-zinc-700 hover:bg-gray-200"
-                  onClick={() => router.push("/account/profile-and-security")}
+                  onClick={() => router.push("/account/account-and-security")}
                 >
                   <div className="flex items-center">
                     <Shield className="w-7 h-7 fill-gray-600 stroke-gray-600 dark:fill-white dark:stroke-white " />
                     <span className="mx-2 max-sm:text-sm dark:text-white select-none">
-                      Profile and security
+                      Account and security
                     </span>
                   </div>
                   <div className="border-t-2 border-r-2 rotate-45 sm:mr-4 mr-2 w-2 h-2 border-gray-600 dark:border-gray-400"></div>
                 </div> 
                 <div
                   className="flex items-center justify-between p-2 py-4 cursor-pointer rounded-md dark:hover:bg-zinc-700 hover:bg-gray-200"
-                  onClick={() => router.push("/account/my-account")}
+                  onClick={() => router.push("/account/my-kyc")}
                 >
                   <div className="flex relative items-center">
                     <KYCIcon className="w-7 h-7 stroke-[12px] fill-gray-600 stroke-gray-600 dark:fill-white dark:stroke-white " />
@@ -122,10 +130,12 @@ export default function Profile() {
             </Card>
           )}
           <Card className="overflow-hidden bg-muted my-2 mt-6 dark:border-border hover:shadow-md transition-shadow ">
-            <CardContent className="p-1 text-gray-600 dark:text-gray-400">
+            <CardContent 
+              onClick={() => setIsLoading(true)}
+            className="p-1 text-gray-600 dark:text-gray-400">
               <div
                   className="flex items-center justify-between p-2 py-4 cursor-pointer rounded-md dark:hover:bg-zinc-700 hover:bg-gray-200"
-                  onClick={() => router.push("/terms-and-conditions")}
+                  onClick={() => router.push("/policy")}
                 >
                   <div className="flex items-center">
                     <Policy className="w-7 h-7 stroke-[5px] fill-gray-600 stroke-gray-600 dark:fill-white dark:stroke-white " />

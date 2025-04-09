@@ -8,6 +8,7 @@ import Providers from "@/components/provider";
 import Initiate from "@/components/initiate";
 import StarryBackground from "@/components/starry-background";
 import ThemeBg from "@/components/theme-bg";
+import AuthProvider from "@/components/session-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -84,19 +85,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} ${teratur.variable} ${alcova.variable} ${xova.variable} ${equinox.variable} ${alma.variable} ${borisna.variable} ${leoscar.variable} ${pier.className} ${pier.variable} ${bigjohnbold.variable} ${bigjohn.variable} antialiased`}
+        className={`${inter.className} ${teratur.variable} ${alcova.variable} ${xova.variable} ${equinox.variable} ${alma.variable} ${borisna.variable} ${leoscar.variable} ${pier.variable} ${bigjohnbold.variable} ${bigjohn.variable} antialiased`}
       >
-        <Providers>
-          <StarryBackground />
-          <ThemeBg />
-          <Initiate />
-          <NavBar />
-          <div className="h-full">
-            {children}
-          </div>
-          <BottomNav />
-          <Toaster />
-        </Providers>
+        <AuthProvider>
+          <Providers>
+            <StarryBackground />
+            <ThemeBg />
+            <Initiate />
+            <NavBar />
+            <div className="h-full">
+              {children}
+            </div>
+            <BottomNav />
+            <Toaster />
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );

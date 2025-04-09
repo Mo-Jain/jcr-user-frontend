@@ -36,8 +36,9 @@ export async function sendEmailWithAttachment(formData: FormData) {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: recipientEmail,
-      subject: "Your Attachment",
-      text: `Hi,\n\nThis mail is for your acknowledgement to our terms and conditions of the lease agreement between you and us. Please find the attached document for your reference.\n\nKind Regards,\nJain Car Rentals Team`,
+      subject: "🚗 Your Ride Has Begun - Buckle Up for an Epic Journey! 🎉",
+      text: `Hi,\n\nGuess what? Your self-drive adventure has officially begun! 🚘✨ Your car is now in your hands—so whether you’re cruising through the city or heading for a road trip, make sure to treat it like a best friend (but, you know, one that doesn’t judge your music choices).\n\nAttached, you’ll find your booking details and terms & conditions—aka the fine print that ensures smooth sailing (or should we say, smooth driving?).\n\nIf you need us, just honk… or better yet, call or reply to this email. We’ve got your back!\n\nDrive safe, have fun, and return with great stories!\n\nBest regards,\n\nJain Car Rentals
+      `,
       attachments: [
         {
           filename: name,
