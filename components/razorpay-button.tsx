@@ -4,6 +4,7 @@ import { useUserStore } from "@/lib/store";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { MdFormatListBulleted } from "react-icons/md";
 
 interface RazorpayOrder {
   id: string;
@@ -106,6 +107,7 @@ const PaymentButton = ({
     const createOrder = async () => {
       if(disabled) return;
         try {
+          if(setIsLoading) setIsLoading(true);
           const check = await axios.get(`${BASE_URL}/api/v1/razorpay/recent-pending/${bookingId}`, {
             headers: {
               authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -130,8 +132,10 @@ const PaymentButton = ({
         } catch (err) {
           console.log(err);
           toast({ description: "Something went wrong", variant: "destructive" });
+          if(setIsLoading) setIsLoading(false);
           return;
         }
+        if(setIsLoading) setIsLoading(false);
       };
       
 
@@ -158,7 +162,7 @@ const PaymentButton = ({
               status: status,
             };
             try {
-              if(setIsLoading) setIsLoading(true);
+              
               const res = await axios.post(`${BASE_URL}/api/v1/razorpay/payment-status`, options2, {
                 headers: {
                   "Content-type": "application/json",

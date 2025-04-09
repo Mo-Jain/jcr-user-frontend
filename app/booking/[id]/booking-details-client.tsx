@@ -304,7 +304,6 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             )}>
               <PaymentButton selectedMethod="upi" totalAmount={(booking?.totalPrice || 0) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
                 <div
-                onClick={() => setIsLoading(true)}
                 className={cn("p-2 overflow-hidden  flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
@@ -314,7 +313,6 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </PaymentButton>
               <PaymentButton selectedMethod="card" totalAmount={((booking?.totalPrice || 0) + (booking?.totalPrice || 0)*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
                 <div 
-                onClick={() => setIsLoading(true)}
                 className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
@@ -327,7 +325,6 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </PaymentButton>
               <PaymentButton selectedMethod="netbanking" totalAmount={((booking?.totalPrice || 0) + (booking?.totalPrice || 0)*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
                 <div 
-                onClick={() => setIsLoading(true)}
                 className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
