@@ -131,7 +131,7 @@ export default function AddressDialog({ isOpen, onClose, address, setAddress}: A
               authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           });
-          setContact(res.data.contact);
+          setContact(res.data.customer.contact);
           const newFormData = parseAddressData();
           if (newFormData) {
             setFormData(newFormData);
