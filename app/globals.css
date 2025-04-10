@@ -160,6 +160,13 @@
     animation: var(--pulse);
   }
 
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+  }
+  
+
   $shine-width: 200px;
   $box-width: 500px;
 

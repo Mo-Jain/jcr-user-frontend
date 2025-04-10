@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronDown, ComputerIcon, Copy, IndianRupee, MoreVertical } from "lucide-react";
+import { Check, ChevronDown, ComputerIcon, Copy, Download,Share, IndianRupee, MoreVertical, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 import ActionDialog from "@/components/action-dialog";
 import axios from "axios";
@@ -30,6 +30,7 @@ import UPI from "@/public/upi-bhim.svg";
 import CreditCard from "@/public/credit-card.svg";
 import Loader2 from "@/components/loader2";
 import NetBanking from "@/public/netbanking.svg";
+import MailDialog from "@/components/mail-dialog";
 
 interface BookingDetailsClientProps {
   booking: Booking;
@@ -58,6 +59,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   const phoneNumber = "+91 79995 51582"
   const emailAddress = "jcrahmedabad@gmail.com";
   const [isOTPLoading,setOTPLoading] = useState(false);
+  const [openMailDialog, setOpenMailDialog] = useState(false);
 
 
   const copyToClipboard = (text: string) => {
@@ -245,15 +247,16 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   };
 
   return (
-    <div className="pt-[75px] sm:pt-12 relative z-0">
+    <div id="printable-section" className="no-print:pt-[75px] print:text-black sm:pt-12 print:pt-2 relative z-0">
       {isLoading &&
       <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/20 backdrop-blur-sm z-50">
           <Loader/>
       </div>
       }
-      <div className="fixed top-[75px] sm:top-12 w-full left-0 flex pt-3 bg-background z-10 items-center justify-between px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white">
+      <MailDialog mail={booking.customerMail} open={openMailDialog} setOpen={setOpenMailDialog} booking={booking}/>
+      <div className="no-print:fixed top-[75px] sm:top-12 w-full left-0 flex pt-3 print:pt-2 bg-background z-10 items-center justify-between print:justify-center px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white">
         <div
-          className="mr-2 rounded-md font-bold  cursor-pointer dark:hover:bg-gray-800 hover:bg-gray-200"
+          className="mr-2 rounded-md no-print font-bold  cursor-pointer dark:hover:bg-gray-800 hover:bg-gray-200"
           onClick={() => router.push("/bookings")}
         >
           <div className="h-10 w-9 flex border-border border justify-center items-center rounded-md ">
@@ -261,7 +264,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
           </div>
         </div>
         <div className="text-center">
-          <h2 className="text-xl font-bold">Booking {bookingStatus}</h2>
+          <h2 className="text-xl font-bold print:text-black">Booking {bookingStatus}</h2>
           <p className="text-sm text-blue-500">Booking ID: {booking.id}</p>
         </div>
         {bookingStatus !== "Cancelled" ?
@@ -269,14 +272,15 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             open={isDropdownOpen}
             onOpenChange={setIsDropdownOpen}
             modal={false}
+            
           >
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild className="no-print">
               <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
                 <span className="sr-only">Open menu</span>
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="border-border">
+            <DropdownMenuContent align="end" className="border-border no-print">
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => {
@@ -287,15 +291,29 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                 <Cancel className="mr-2 h-4 w-4 stroke-1 stroke-black dark:stroke-white dark:fill-white" />
                 <span>Cancel</span>
               </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => setOpenMailDialog(true)}
+              >
+                <Mail className="mr-2 h-4 w-4 " />
+                <span>Mail Booking Details</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => window.print()}
+              >
+                <Download className="mr-2 h-4 w-4 stroke-1 stroke-black dark:stroke-white dark:fill-white" />
+                <span>Print PDF</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           :
-          <div className="w-8 h-8"/>
+          <div className="w-8 h-8 no-print"/>
           }
       </div>
-      <div className="w-full h-[70px]"/>
+      <div className="w-full h-[70px] no-print"/>
 
-        <div className="w-full flex py-2 justify-center">
+        <div className="w-full flex py-2 justify-center no-print">
           {((booking?.totalPrice || 0) - advancePayment) > 0 && bookingStatus !== "Requested"  && bookingStatus !== "Completed"  &&
           <div className=" flex flex-col items-center justify-center w-full">
             <Button 
@@ -532,7 +550,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => copyToClipboard(phoneNumber)}
-                    className="h-8 px-2"
+                    className="h-8 px-2 no-print"
                   >
                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                   </Button>
@@ -550,7 +568,12 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
         </div>
       </div>
       {isSomeDetails &&
-      <div className="px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted">
+      <div className={cn("px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted",
+        !isSomeDetails ? "print:hidden" : "",
+        isSomeDetails && booking.documents && booking.documents.length > 0 ? "print:hidden" : "",
+        isSomeDetails && booking.selfieUrl ? "print:hidden" : "",
+        isSomeDetails && booking.carImages && booking.carImages.length > 0 ? "print:hidden" : ""
+      )}>
         <h3 className="text-lg font-semibold mb-4 ">Some more details</h3>
         <div className="grid grid-cols-2 gap-4 sm:gap-6">
           <div className="space-y-4">
@@ -561,7 +584,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </div>
             )}
             {bookingStatus !== "Upcoming" && booking.selfieUrl && (
-              <div>
+              <div className="no-print">
                 <p className="text-xs sm:text-sm text-blue-500">
                   Selfie with car
                 </p>
@@ -569,7 +592,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </div>
             )}
             {booking.documents && booking.documents?.length > 0 && (
-            <div>
+            <div className="no-print">
               <div className="flex sm:gap-1 items-center">
                 <p className="text-xs sm:text-sm text-blue-500">
                   Aadhar Card and Driving License
@@ -606,7 +629,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </div>
             )}
             {bookingStatus !== "Upcoming" && booking.carImages && booking.carImages.length >0 && (
-              <div>
+              <div className="no-print">
                 <div className="flex sm:gap-1 items-center">
                   <p className="text-xs sm:text-sm text-blue-500">
                     Photos Before pick-up
@@ -625,7 +648,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
       </div>
       }
         {bookingStatus === "Upcoming" ? (
-        <div className="w-full fixed bg-background border-t border-border z-10 bottom-0 left-0 flex justify-center p-2 flex items-center gap-2">
+        <div className="w-full no-print fixed bg-background border-t border-border z-10 bottom-0 left-0 flex justify-center p-2 flex items-center gap-2">
             <div className="flex sm:hidden items-center flex-col w-1/3">
               <span className="text-primary italic text-[8px] whitespace-nowrap">Amount Remaining</span>
               {amountRemaining > 0 ?
@@ -644,7 +667,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             </Button>
         </div>
         ):
-        <div className="w-full h-[50px]"/>
+        <div className="w-full h-[50px] no-print"/>
         }
         <ActionDialog
           isDialogOpen={isDialogOpen}
@@ -654,7 +677,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
         />
       <div className="relative z-50">
         <Dialog open={isOTPDialogOpen} onOpenChange={setIsOTPDialogOpen}>
-          <DialogOverlay className="  backdrop-blur-lg"/>
+          <DialogOverlay className=" no-print backdrop-blur-lg"/>
               <DialogContent className="max-w-[325px] max-sm:rounded-sm  bg-muted border-border">
                 <DialogHeader>
                   <DialogTitle className="text-center mb-2">Enter OTP</DialogTitle>

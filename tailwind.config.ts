@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import animate from 'tailwindcss-animate'
+import plugin from 'tailwindcss/plugin'
 
 export default {
   darkMode: ["class"],
@@ -8,10 +10,14 @@ export default {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {
+    container: {
+      center: true,
+      padding: "2rem",
       screens: {
-        xs: "400px",
+        "2xl": "1400px",
       },
+    },
+    extend: {
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -81,7 +87,7 @@ export default {
           },
         },
         bounceY: {
-          "0%, 100%": { transform: "translateY(-20px)" },
+          "0%, 100%": { transform: "translateY(-10px)" },
           "50%": { transform: "translateY(0px)" },
         },
       },
@@ -92,5 +98,11 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    animate, // Keep this for animation utilities
+    plugin(function ({ addVariant }) {
+      addVariant('print', '@media print')
+      addVariant('no-print', '@media not print')
+    }),
+  ],
 } satisfies Config;

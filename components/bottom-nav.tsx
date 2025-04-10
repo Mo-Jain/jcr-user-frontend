@@ -63,7 +63,7 @@ export function BottomNav() {
   if(pathname.startsWith("/booking/")) return null;
 
   return (
-    <div className="relative">
+    <div className="relative no-print">
       <nav className="fixed z-[99] bottom-0 left-0 right-0 border-t dark:border-border bg-white bg-opacity-60 dark:bg-black dark:bg-opacity-50 backdrop-blur-lg  sm:hidden">
         {name ? (
           <div className="flex justify-around py-2">

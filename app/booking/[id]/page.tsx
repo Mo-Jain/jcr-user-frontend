@@ -30,6 +30,7 @@ export interface Booking {
   status: string;
   customerName: string;
   customerContact: string;
+  customerMail?: string;
   carId: number;
   carName: string;
   carPlateNumber: string;

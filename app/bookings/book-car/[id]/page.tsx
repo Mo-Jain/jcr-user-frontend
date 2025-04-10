@@ -468,7 +468,7 @@ export default function CarBookingPage() {
                       {deliveryOption ==="home delivery" &&
                       <div className="ml-4">
                         <div className="flex items-start w-full">
-                          <span className="text-xs">Distance from our location(in km)</span>
+                          <span className="text-xs">How far are you from us(in km)</span>
                           <span className="text-[10px] text-red-500">*</span>
                         </div>
                         <div>
@@ -489,7 +489,7 @@ export default function CarBookingPage() {
                               <span className="text-sm">Kms</span>
                             </div>
                             {distanceError && <p className="text-xs text-red-500">{distanceError}</p>}
-                            <span className="text-xs">Please Note: Our location is mentioned at the top</span>
+                            <span className="text-xs">Note: Take help of our location mentioned at top</span>
                           </div>
                         </div>
                         }
