@@ -38,6 +38,8 @@ interface AddressFieldsProps {
   setFormData:React.Dispatch<React.SetStateAction<AddressData>>;
   setContact:React.Dispatch<React.SetStateAction<string>>;
   setName:(value:string) => void;
+  validatePincode:(pincode:string) => Promise<void>;
+  isLoading:boolean;
 }
 
 export default function AddressFields({
@@ -50,10 +52,11 @@ export default function AddressFields({
   formData,
   setFormData,
   setContact,
-  setName
+  setName,
+  validatePincode,
+  isLoading
 }: AddressFieldsProps) {
     
-    const [isLoading, setIsLoading] = useState(false);
     
     const clearField = (field: keyof AddressData) => {
         setFormData(prev => ({ ...prev, [field]: '' }));
@@ -63,46 +66,14 @@ export default function AddressFields({
         }
     };
 
-    const handleFormDataChange = (newData: AddressData) => {
+    const handleFormDataChange = async (newData: AddressData) => {
         setFormData(newData);
         if (newData.pincode !== formData.pincode) {
-          validatePincode(newData.pincode);
+          await validatePincode(newData.pincode);
         }
       };
 
-    const validatePincode = async (pincode: string) => {
-        if (pincode.length === 6) {
-          setIsLoading(true);
-          try {
-            // This is a mock API call - in production, use a real Indian postal API
-            const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
-            const data = await response.json();
-            
-            if (data[0].Status === 'Success') {
-              const postOffice = data[0].PostOffice[0];
-              setFormData(prev => ({
-                ...prev,
-                city: postOffice.District,
-                state: postOffice.State
-              }));
-              setIsValidPincode(true);
-              setErrors((prev) => ({ ...prev, pincode: "" }))
-            } else {
-              setIsValidPincode(false);
-              setErrors((prev) => ({ ...prev, pincode: "Please enter valid Pin or postal code." }))
-            }
-          } catch (error) {
-            console.error(error);
-            setIsValidPincode(false);
-            setErrors((prev) => ({ ...prev, pincode: "Please enter valid Pin or postal code." }))
-          } finally {
-            setIsLoading(false);
-          }
-        } else {
-          setIsValidPincode(false);
-          setErrors((prev) => ({ ...prev, pincode: pincode ? 'Please enter valid Pin or postal code.' : '' }))
-        }
-      };
+    
   return (
     <div className="space-y-2">
         <div className="grid grid-cols-2 gap-2 sm:gap-4">

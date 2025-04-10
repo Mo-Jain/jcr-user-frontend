@@ -262,7 +262,7 @@ export function CarDetailsClient({ carId }: { carId: number }) {
             </div>
           </div>
         </div>
-        <div className="mx-auto mt-4 w-full sm:w-1/2">
+        <div className="mx-auto mt-4 px-4 w-full sm:w-1/2">
           <Button 
           onClick={() => router.push('/bookings/book-car/'+car.id)}
           className="w-full ">Book Now</Button>
