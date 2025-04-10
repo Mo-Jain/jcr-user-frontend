@@ -33,6 +33,7 @@ export interface Booking {
   customerContact: string;
   carId: number;
   carName: string;
+  type:string;
   carPlateNumber: string;
   carImageUrl: string;
   dailyRentalPrice: number;
