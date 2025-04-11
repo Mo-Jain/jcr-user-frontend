@@ -328,7 +328,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
       </div>
       <div className="w-full h-[70px] no-print pdf-mode:hidden"/>
 
-        <div className="w-full flex py-2 justify-center no-print">
+        <div className="w-full flex py-2 justify-center no-print pdf-mode:hidden">
           {((booking?.totalPrice || 0) - advancePayment) > 0 && bookingStatus !== "Requested"  && bookingStatus !== "Completed"  &&
           <div className=" flex flex-col items-center justify-center w-full">
             <Button 
