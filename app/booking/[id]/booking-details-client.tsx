@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronDown, ComputerIcon, Copy, Download,Share, IndianRupee, MoreVertical, Mail } from "lucide-react";
+import { Check, ChevronDown,  Copy, Download, IndianRupee, MoreVertical, Mail, PrinterIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import ActionDialog from "@/components/action-dialog";
 import axios from "axios";
@@ -31,6 +31,7 @@ import CreditCard from "@/public/credit-card.svg";
 import Loader2 from "@/components/loader2";
 import NetBanking from "@/public/netbanking.svg";
 import MailDialog from "@/components/mail-dialog";
+import { useDownloadPDF } from "@/hooks/useDownload";
 
 interface BookingDetailsClientProps {
   booking: Booking;
@@ -60,7 +61,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   const emailAddress = "jcrahmedabad@gmail.com";
   const [isOTPLoading,setOTPLoading] = useState(false);
   const [openMailDialog, setOpenMailDialog] = useState(false);
-
+  const { downloadPDF } = useDownloadPDF();
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -211,6 +212,12 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
     );
   };
 
+  const exportPDF = async () => {
+    setIsLoading(true);
+    await downloadPDF('printable-section', 'booking.pdf');
+    setIsLoading(false);
+  }
+
   const handleVerify = async() => {
     setOTPLoading(true);
     try{
@@ -247,16 +254,17 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   };
 
   return (
-    <div id="printable-section" className="no-print:pt-[75px] print:text-black sm:pt-12 print:pt-2 relative z-0">
+    <div>
       {isLoading &&
       <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/20 backdrop-blur-sm z-50">
           <Loader/>
       </div>
       }
+    <div id="printable-section" className="pt-[75px] print:text-black pdf-mode:text-black sm:pt-12 print:pt-2 pdf-mode:pt-0 relative z-0">
       <MailDialog mail={booking.customerMail} open={openMailDialog} setOpen={setOpenMailDialog} booking={booking}/>
-      <div className="no-print:fixed top-[75px] sm:top-12 w-full left-0 flex pt-3 print:pt-2 bg-background z-10 items-center justify-between print:justify-center px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white">
+      <div className="no-print:fixed pdf-mode:relative top-[75px] sm:top-12 pdf-mode:top-0 w-full left-0 flex pt-3 print:pt-2 pdf-mode:pt-0 bg-background pdf-mode:bg-transparent z-10 items-center justify-between print:justify-center pdf-mode:justify-center px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white"> 
         <div
-          className="mr-2 rounded-md no-print font-bold  cursor-pointer dark:hover:bg-gray-800 hover:bg-gray-200"
+          className="mr-2 rounded-md no-print pdf-mode:hidden font-bold  cursor-pointer dark:hover:bg-gray-800 hover:bg-gray-200"
           onClick={() => router.push("/bookings")}
         >
           <div className="h-10 w-9 flex border-border border justify-center items-center rounded-md ">
@@ -264,7 +272,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
           </div>
         </div>
         <div className="text-center">
-          <h2 className="text-xl font-bold print:text-black">Booking {bookingStatus}</h2>
+          <h2 className="text-xl font-bold pdf-mode:text-black print:text-black">Booking {bookingStatus}</h2>
           <p className="text-sm text-blue-500">Booking ID: {booking.id}</p>
         </div>
         {bookingStatus !== "Cancelled" ?
@@ -274,7 +282,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             modal={false}
             
           >
-            <DropdownMenuTrigger asChild className="no-print">
+            <DropdownMenuTrigger asChild className="no-print pdf-mode:hidden">
               <Button variant="ghost" className="h-8 w-8 p-0 active:scale-95">
                 <span className="sr-only">Open menu</span>
                 <MoreVertical className="h-4 w-4" />
@@ -302,8 +310,15 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                 className="cursor-pointer"
                 onClick={() => window.print()}
               >
-                <Download className="mr-2 h-4 w-4 stroke-1 stroke-black dark:stroke-white dark:fill-white" />
+                <PrinterIcon className="mr-2 h-4 w-4 " />
                 <span>Print PDF</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={exportPDF}
+              >
+                <Download className="mr-2 h-4 w-4 stroke-1 stroke-black dark:stroke-white fill-black dark:fill-white" />
+                <span>Export PDF</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -311,7 +326,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
           <div className="w-8 h-8 no-print"/>
           }
       </div>
-      <div className="w-full h-[70px] no-print"/>
+      <div className="w-full h-[70px] no-print pdf-mode:hidden"/>
 
         <div className="w-full flex py-2 justify-center no-print">
           {((booking?.totalPrice || 0) - advancePayment) > 0 && bookingStatus !== "Requested"  && bookingStatus !== "Completed"  &&
@@ -362,7 +377,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             </div>
         </div>}
         </div>
-      <div className=" relative px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted">
+      <div className=" relative px-1 sm:px-4 py-4 border-b-4 pdf-mode:py-2 border-gray-200 dark:border-muted">
         <div className="  flex justify-between items-center">
           <div className="absolute top-[10%] text-sm left-0 rounded-e-lg bg-blue-400 border-border p-1 px-2">
             {booking.type}
@@ -406,7 +421,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
         </div>
       </div>
 
-      <div className="px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted">
+      <div className="px-1 sm:px-4 py-4 border-b-4 pdf-mode:py-2 border-gray-200 dark:border-muted">
         <h3 className="text-lg font-semibold mb-4 ">Booking Details</h3>
         <div className="flex items-center justify-center gap-8 max-sm:gap-2 mb-4">
           <div className="w-full flex flex-col items-end">
@@ -448,12 +463,6 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
         <hr className="my-4 border-gray-200 dark:border-muted" />
         <div className="grid grid-cols-2 items-center sm:gap-6">
           <div>
-            <p className="text-sm text-blue-500 mb-1">Booking Status</p>
-            <div>
-                <p className={` `}>{bookingStatus}</p>
-            </div>
-          </div>
-          <div>
             <p className="text-sm text-blue-500 mb-1">Payment Method</p>
             <div>
                 <p className={` `}>{paymentMethod}</p>
@@ -461,15 +470,17 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
           </div>
         </div>
       </div>
-      <div className="px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted">
-        <h3 className="text-lg font-semibold mb-4 ">
+      <div className="px-1 sm:px-4 py-4 border-b-4 pdf-mode:py-2 border-gray-200 dark:border-muted">
+        <h3 className="text-lg font-semibold mb-4 pdf-mode:mb-0">
           Price and Payment Details
         </h3>
         <div className="rounded-lg bg-transparent py-4 px-2 space-y-2 w-full max-w-[500px] mx-auto">
             <div className="flex justify-between">
               <span className="text-sm">Daily Rate:</span>
-              <span className="text-sm font-medium flex items-center gap-1">
-                <IndianRupee className="w-4 h-4"/>
+              <span className="text-sm font-medium flex items-center pdf-mode:items-center gap-1 pdf-mode:gap-0">
+                <span className="pdf-mode:mt-4">
+                  <IndianRupee className="w-4 h-4  "/>
+                </span>
                 {booking.dailyRentalPrice.toFixed(2)}
               </span>
             </div>
@@ -481,14 +492,20 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             <div className="flex justify-between">
               <span className="text-sm">Delivery charges:</span>
               <span className="text-sm font-medium flex items-center gap-1">
-                <IndianRupee className="w-4 h-4"/>
+                <span className="pdf-mode:mt-4">
+                  <span className="pdf-mode:mt-4">
+                  <IndianRupee className="w-4 h-4  "/>
+                </span>
+                </span>
                 {(booking.type === "home delivery" ? 1000 : 0).toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm">Merchant fees:</span>
               <span className="text-sm font-medium flex items-center gap-1">
-                <IndianRupee className="w-4 h-4"/>
+                <span className="pdf-mode:mt-4">
+                  <IndianRupee className="w-4 h-4  "/>
+                </span>
                 {charge.toFixed(2)}
               </span>
             </div>
@@ -496,14 +513,18 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             <div className="flex justify-between border-t pt-2 mt-2">
               <span className="font-medium">Total Amount:</span>
               <span className="font-bold flex items-center gap-1">
-                <IndianRupee className="w-4 h-4"/>
+                <span className="pdf-mode:mt-4">
+                  <IndianRupee className="w-4 h-4  "/>
+                </span>
                 {booking.totalPrice.toFixed(2)}</span>
             </div>}
             
             <div className="flex justify-between">
               <span className="text-sm">Amount paid:</span>
               <span className="text-sm font-medium flex items-center gap-1">
-                <IndianRupee className="w-4 h-4"/>
+                <span className="pdf-mode:mt-4">
+                  <IndianRupee className="w-4 h-4  "/>
+                </span>
                 {(advancePayment).toFixed(2)}
               </span>
             </div>
@@ -511,7 +532,9 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               <span className="font-medium">Amount remaining:</span>
               {amountRemaining > 0 ?
               <span className=" font-bold flex items-center gap-1">
-                <IndianRupee className="w-4 h-4"/>
+                <span className="pdf-mode:mt-4">
+                  <IndianRupee className="w-4 h-4  "/>
+                </span>
                   {amountRemaining.toFixed(2)}
               </span>
               :
@@ -525,7 +548,9 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             <span className="text-sm">Security deposit:</span>
             {booking.securityDeposit ?
                 <span className="text-sm font-medium flex items-center gap-1">
-                  <IndianRupee className="w-4 h-4"/>
+                  <span className="pdf-mode:mt-4">
+                  <IndianRupee className="w-4 h-4  "/>
+                </span>
                   {booking.securityDeposit}
                 </span>
                 :
@@ -534,7 +559,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                 </span>}
             </div>
       </div>
-      <div className="px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted">
+      <div className="px-1 sm:px-4 py-4 border-b-4 pdf-mode:py-2 border-gray-200 dark:border-muted">
         <h3 className="text-lg font-semibold mb-4 ">Owner Details</h3>
         <div className="grid grid-cols-2 gap-2 sm:gap-6">
           <div className="space-y-4">
@@ -550,7 +575,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => copyToClipboard(phoneNumber)}
-                    className="h-8 px-2 no-print"
+                    className="h-8 px-2 no-print pdf-mode:hidden"
                   >
                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                   </Button>
@@ -568,11 +593,11 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
         </div>
       </div>
       {isSomeDetails &&
-      <div className={cn("px-1 sm:px-4 py-4 border-b-4 border-gray-200 dark:border-muted",
-        !isSomeDetails ? "print:hidden" : "",
-        isSomeDetails && booking.documents && booking.documents.length > 0 ? "print:hidden" : "",
-        isSomeDetails && booking.selfieUrl ? "print:hidden" : "",
-        isSomeDetails && booking.carImages && booking.carImages.length > 0 ? "print:hidden" : ""
+      <div className={cn("px-1 sm:px-4 py-4 border-b-4 pdf-mode:py-2 border-gray-200 dark:border-muted",
+        !isSomeDetails ? "print:hidden pdf-mode:hidden" : "",
+        isSomeDetails && booking.documents && booking.documents.length > 0 ? "print:hidden pdf-mode:hidden" : "",
+        isSomeDetails && booking.selfieUrl ? "print:hidden pdf-mode:hidden" : "",
+        isSomeDetails && booking.carImages && booking.carImages.length > 0 ? "print:hidden pdf-mode:hidden" : ""
       )}>
         <h3 className="text-lg font-semibold mb-4 ">Some more details</h3>
         <div className="grid grid-cols-2 gap-4 sm:gap-6">
@@ -584,7 +609,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </div>
             )}
             {bookingStatus !== "Upcoming" && booking.selfieUrl && (
-              <div className="no-print">
+              <div className="no-print pdf-mode:hidden">
                 <p className="text-xs sm:text-sm text-blue-500">
                   Selfie with car
                 </p>
@@ -592,7 +617,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </div>
             )}
             {booking.documents && booking.documents?.length > 0 && (
-            <div className="no-print">
+            <div className="no-print pdf-mode:hidden">
               <div className="flex sm:gap-1 items-center">
                 <p className="text-xs sm:text-sm text-blue-500">
                   Aadhar Card and Driving License
@@ -629,7 +654,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </div>
             )}
             {bookingStatus !== "Upcoming" && booking.carImages && booking.carImages.length >0 && (
-              <div className="no-print">
+              <div className="no-print pdf-mode:hidden">
                 <div className="flex sm:gap-1 items-center">
                   <p className="text-xs sm:text-sm text-blue-500">
                     Photos Before pick-up
@@ -648,7 +673,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
       </div>
       }
         {bookingStatus === "Upcoming" ? (
-        <div className="w-full no-print fixed bg-background border-t border-border z-10 bottom-0 left-0 flex justify-center p-2 flex items-center gap-2">
+        <div className="w-full no-print pdf-mode:hidden fixed bg-background border-t border-border z-10 bottom-0 left-0 flex justify-center p-2 flex items-center gap-2">
             <div className="flex sm:hidden items-center flex-col w-1/3">
               <span className="text-primary italic text-[8px] whitespace-nowrap">Amount Remaining</span>
               {amountRemaining > 0 ?
@@ -728,6 +753,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </DialogContent>
           </Dialog>
       </div>
+    </div>
     </div>
   );
 }

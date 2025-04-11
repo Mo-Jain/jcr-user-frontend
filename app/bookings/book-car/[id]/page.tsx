@@ -42,7 +42,7 @@ export default function CarBookingPage() {
     const router = useRouter();
     const [totalAmount, setTotalAmount] = useState<number>(0);
     const [isLoading,setIsLoading] = useState(false);
-    const [buttonText, setButtonText] = useState<"Available" | "Not available" | "Checking..." | "Please wait">("Available");
+    const [buttonText, setButtonText] = useState<"Available" | "Not available" | "Checking...">("Available");
     const [address,setAddress] = useState("");
     const officeAddress = "Anant Sky, opp. PINK CITY, nr. Andh Kalyan Kendra, Ghanshyam Nagar, Ranip, Ahmedabad, Gujarat 382480, India"
     const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(officeAddress)}`
@@ -152,7 +152,6 @@ export default function CarBookingPage() {
           return;
         }
         setIsLoading(true);
-        setButtonText("Please wait")
         try {
           await axios.post(
             `${BASE_URL}/api/v1/customer/booking`,

@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { X, Loader2, Info } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';

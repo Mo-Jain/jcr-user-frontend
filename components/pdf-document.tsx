@@ -239,9 +239,12 @@ const PDFDocument = ({ booking }: { booking: Booking }) => {
               <Text style={styles.text}>{booking.carName}</Text>
               <Text style={styles.text}>{booking.carPlateNumber}</Text>
             </View>
+            
           </View>
         </View>
+
         <View style={styles.divider} />
+
         <View style={styles.section}>
           <Text style={styles.textHeading}>Booking Period</Text>
           <View style={styles.row}>
@@ -255,7 +258,9 @@ const PDFDocument = ({ booking }: { booking: Booking }) => {
             </View>
           </View>
         </View>
+
         <View style={styles.divider} />
+
         <View style={styles.section}>
           <Text style={styles.textHeading}>Customer Information</Text>
           <View style={styles.row}>
@@ -271,10 +276,10 @@ const PDFDocument = ({ booking }: { booking: Booking }) => {
             </View>
             <View >
                 {booking.customerAddress && (
-                  <View >
-                      <Text style={{...styles.text,...styles.bold}}>Address: </Text>
-                      <Text style={styles.text}>{booking.customerAddress}</Text>
-                  </View>
+                    <View >
+                        <Text style={{...styles.text,...styles.bold}}>Address: </Text>
+                        <Text style={styles.text}>{booking.customerAddress}</Text>
+                    </View>
                 )}
             </View>
             <View>
@@ -314,6 +319,7 @@ const PDFDocument = ({ booking }: { booking: Booking }) => {
             <View style={styles.printRow}>
               <Text style={styles.text}>Daily Rate:</Text>
               <View style={styles.money}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image src="/rupee.png" style={{width:12,height:12,marginTop:-2}} />
                 <Text style={styles.text}>
                   {booking.dailyRentalPrice.toFixed(2)}
@@ -327,6 +333,7 @@ const PDFDocument = ({ booking }: { booking: Booking }) => {
             <View style={styles.printRow}>
               <Text style={styles.text}>Delivery charges:</Text>
               <View style={styles.money}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image src="/rupee.png" style={{width:12,height:12,marginTop:-2}} />
                 <Text style={styles.text}>
                   {(booking.type === "home delivery" ? 1000 : 0).toFixed(2)}
@@ -336,6 +343,7 @@ const PDFDocument = ({ booking }: { booking: Booking }) => {
             <View style={styles.printRow}>
               <Text style={styles.text}>Merchant fees:</Text>
               <View style={styles.money}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image src="/rupee.png" style={{width:12,height:12,marginTop:-2}} />
                 <Text style={styles.text}>
                 {charge.toFixed(2)}
@@ -345,6 +353,7 @@ const PDFDocument = ({ booking }: { booking: Booking }) => {
             <View style={styles.total}>
               <Text style={styles.text}>Total Amount:</Text>
               <View style={styles.money}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image src="/rupee.png" style={{width:12,height:12,marginTop:-2}} />
                 <Text style={styles.text}>
                   {(booking.type === "home delivery" ? totalAmount + charge + 1000 : totalAmount + charge).toFixed(2)}
@@ -354,6 +363,7 @@ const PDFDocument = ({ booking }: { booking: Booking }) => {
             <View style={styles.printRow}>
               <Text style={styles.text}>Amount Paid:</Text>
               <View style={styles.money}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image src="/rupee.png" style={{width:12,height:12,marginTop:-2}} />
                 <Text style={styles.text}>
                 {(booking.advancePayment || 0).toFixed(2)}
@@ -364,6 +374,7 @@ const PDFDocument = ({ booking }: { booking: Booking }) => {
               <Text style={styles.text}>Amount Remaining:</Text>
               {amountRemaining > 0 ?
               <View style={styles.money}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image src="/rupee.png" style={{width:12,height:12,marginTop:-2}} />
                 <Text style={styles.text}>
                   {amountRemaining.toFixed(2)}
