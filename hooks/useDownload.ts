@@ -1,5 +1,5 @@
-// hooks/useDownloadPDF.ts
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
@@ -15,56 +15,60 @@ export const useDownloadPDF = () => {
     document.body.classList.add('pdf-mode');
 
     await new Promise((r) => setTimeout(r, 100));
-  
-
-    const opt = {
-      margin: 0.5,
-      filename: fileName,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-    };
 
     const isNative = Capacitor.isNativePlatform();
 
     if (isNative) {
-      // Android / iOS (Capacitor)
-      const blob = await html2pdf().set(opt).from(element).outputPdf('blob');
-      const base64 = await blobToBase64(blob);
+      try {
+        const canvas = await html2canvas(element, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
 
-      await Filesystem.writeFile({
-        path: fileName,
-        data: base64,
-        directory: Directory.Documents,
-      });
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+        });
 
-      await Share.share({
-        title: 'Download PDF',
-        text: 'Download or share your PDF',
-        url: fileName,
-        dialogTitle: 'Share your PDF',
-      });
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+        const base64 = pdf.output('datauristring').split(',')[1];
+
+        await Filesystem.writeFile({
+          path: fileName,
+          data: base64,
+          directory: Directory.Documents,
+        });
+
+        await Share.share({
+          title: 'Download PDF',
+          text: 'Download or share your PDF',
+          url: fileName,
+          dialogTitle: 'Share your PDF',
+        });
+      } catch (err) {
+        console.error('PDF export failed on native platform:', err);
+      }
     } else {
-      // Browser
+      const html2pdf = (await import('html2pdf.js')).default;
+
+      const opt = {
+        margin: 0.5,
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+      };
+
       html2pdf().set(opt).from(element).save();
     }
+
     setTimeout(() => {
       document.body.classList.remove('pdf-mode');
     }, 500);
   };
 
   return { downloadPDF };
-};
-
-// helper to convert Blob to base64
-const blobToBase64 = (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64data = reader.result?.toString().split(',')[1];
-      resolve(base64data || '');
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
 };

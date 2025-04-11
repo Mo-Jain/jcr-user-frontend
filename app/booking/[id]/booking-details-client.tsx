@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronDown,  Copy, Download, IndianRupee, MoreVertical, Mail, PrinterIcon } from "lucide-react";
+import { Check, ChevronDown,  Copy, Download, IndianRupee, MoreVertical, Mail, PrinterIcon, QrCode } from "lucide-react";
 import { useEffect, useState } from "react";
 import ActionDialog from "@/components/action-dialog";
 import axios from "axios";
@@ -214,7 +214,12 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
 
   const exportPDF = async () => {
     setIsLoading(true);
-    await downloadPDF('printable-section', 'booking.pdf');
+    try {
+      await downloadPDF('printable-section', 'booking.pdf');
+    } catch (err) {
+      console.error('PDF export failed:', err);
+      alert('Something went wrong while exporting PDF');
+    }
     setIsLoading(false);
   }
 
@@ -374,6 +379,14 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                   </div>
                 </div>
               </PaymentButton>
+              <div
+              // onClick={() =>}
+                className={cn("p-2 overflow-hidden  flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                  !isPayment ? 'h-0 p-0' : 'h-[110px]'
+                )}>
+                  <QrCode className = "w-12 h-12 text-foreground"/>
+                  <p className="text-sm mb-3">QR code</p>
+              </div>
             </div>
         </div>}
         </div>
@@ -548,9 +561,6 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             <span className="text-sm">Security deposit:</span>
             {booking.securityDeposit ?
                 <span className="text-sm font-medium flex items-center gap-1">
-                  <span className="pdf-mode:mt-4">
-                  <IndianRupee className="w-4 h-4  "/>
-                </span>
                   {booking.securityDeposit}
                 </span>
                 :
