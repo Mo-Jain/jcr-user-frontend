@@ -42,10 +42,15 @@ export const useDownloadPDF = () => {
           directory: Directory.Documents,
         });
 
+        const fileUri = await Filesystem.getUri({
+          path: fileName,
+          directory: Directory.Documents,
+        });
+        
         await Share.share({
           title: 'Download PDF',
           text: 'Download or share your PDF',
-          url: fileName,
+          url: fileUri.uri, // ✅ correct full path
           dialogTitle: 'Share your PDF',
         });
       } catch (err) {
