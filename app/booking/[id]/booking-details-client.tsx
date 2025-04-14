@@ -217,7 +217,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   const exportPDF = async () => {
     setIsLoading(true);
     try {
-      await downloadPDF('printable-section', 'booking.pdf');
+      await downloadPDF('printable-section', 'booking_'+booking.id+'.pdf');
     } catch (err) {
       console.error('PDF export failed:', err);
       alert('Something went wrong while exporting PDF');
