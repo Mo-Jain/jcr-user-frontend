@@ -11,28 +11,31 @@ export const useDownloadPDF = () => {
       console.error('Element not found:', elementId);
       return;
     }
+    try{
+      document.body.classList.add('pdf-mode');
 
-    document.body.classList.add('pdf-mode');
+      await new Promise((r) => setTimeout(r, 100));
 
-    await new Promise((r) => setTimeout(r, 100));
+      // const isNative = Capacitor.isNativePlatform();
 
-    // const isNative = Capacitor.isNativePlatform();
+      const html2pdf = (await import('html2pdf.js')).default;
 
-    const html2pdf = (await import('html2pdf.js')).default;
+      const opt = {
+        margin: 0.5,
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+      };
 
-    const opt = {
-      margin: 0.5,
-      filename: fileName,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-    };
+      html2pdf().set(opt).from(element).save();
 
-    html2pdf().set(opt).from(element).save();
-
-    setTimeout(() => {
-      document.body.classList.remove('pdf-mode');
-    }, 500);
+      setTimeout(() => {
+        document.body.classList.remove('pdf-mode');
+      }, 500);
+    }catch(error){
+      console.log(error);
+    }
   };
 
   return { downloadPDF };
