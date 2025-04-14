@@ -64,6 +64,7 @@ const Initiate = () => {
       } catch (error) {
           console.log(error);
           setIsCarLoading(false);
+          setIsServerLoading(false);
       }
       setIsLoading(false);
     };

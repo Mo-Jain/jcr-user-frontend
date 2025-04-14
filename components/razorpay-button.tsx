@@ -275,7 +275,7 @@ const PaymentButton = ({
   <>
     <div
       onClick={createOrder}
-      className={cn("text-white active:scale-95 cursor-pointer",className,
+      className={cn(" active:scale-95 cursor-pointer",className,
         disabled && "cursor-not-allowed bg-opacity-70"
       )}
       >

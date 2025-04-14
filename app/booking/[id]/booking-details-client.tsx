@@ -32,6 +32,7 @@ import Loader2 from "@/components/loader2";
 import NetBanking from "@/public/netbanking.svg";
 import MailDialog from "@/components/mail-dialog";
 import { useDownloadPDF } from "@/hooks/useDownload";
+import QrDialog from "@/components/qr-dialog";
 
 interface BookingDetailsClientProps {
   booking: Booking;
@@ -62,6 +63,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   const [isOTPLoading,setOTPLoading] = useState(false);
   const [openMailDialog, setOpenMailDialog] = useState(false);
   const { downloadPDF } = useDownloadPDF();
+  const [QRDialogOpen,setQRDialogOpen]=  useState(false);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -265,6 +267,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
           <Loader/>
       </div>
       }
+      <QrDialog open={QRDialogOpen} setOpen={setQRDialogOpen} price={(booking?.totalPrice || 0) - advancePayment}/>
     <div id="printable-section" className="pt-[75px] print:text-black pdf-mode:text-black sm:pt-12 print:pt-2 pdf-mode:pt-0 relative z-0">
       <MailDialog mail={booking.customerMail} open={openMailDialog} setOpen={setOpenMailDialog} booking={booking}/>
       <div className="no-print:fixed pdf-mode:relative top-[75px] sm:top-12 pdf-mode:top-0 w-full left-0 flex pt-3 print:pt-2 pdf-mode:pt-0 bg-background pdf-mode:bg-transparent z-10 items-center justify-between print:justify-center pdf-mode:justify-center px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white"> 
@@ -334,7 +337,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
       <div className="w-full h-[70px] no-print pdf-mode:hidden"/>
 
         <div className="w-full flex py-2 justify-center no-print pdf-mode:hidden">
-          {((booking?.totalPrice || 0) - advancePayment) > 0 && bookingStatus !== "Requested"  && bookingStatus !== "Completed"  &&
+          {((booking?.totalPrice || 0) - advancePayment) > 0 && (bookingStatus === "Upcoming" || bookingStatus === "Ongoing")  &&
           <div className=" flex flex-col items-center justify-center w-full">
             <Button 
             onClick={() => {
@@ -344,11 +347,11 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               Proceed with payment
               <ChevronDown className={`w-4 transition-all duration-300 ease-in-out h-4 ${isPayment ? "rotate-180" : ""}`}/>
             </Button> 
-            <div className={cn("w-full h-fit max-w-[360px] h-fit  overflow-hidden p-2 sm:px-4 flex justify-between mx-auto ",
+            <div className={cn("h-fit  overflow-hidden p-2 sm:px-4 flex gap-2 justify-center mx-auto flex-wrap ",
             )}>
               <PaymentButton selectedMethod="upi" totalAmount={(booking?.totalPrice || 0) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
                 <div
-                className={cn("p-2 overflow-hidden  flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                className={cn("p-2 overflow-hidden  flex flex-col active:scale-95 gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
                   <UPI className = "w-12 h-12 fill-none flex-shrink-0 stroke-[10px] stroke-foreground"/>
@@ -357,7 +360,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </PaymentButton>
               <PaymentButton selectedMethod="card" totalAmount={((booking?.totalPrice || 0) + (booking?.totalPrice || 0)*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
                 <div 
-                className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                className={cn("p-2 overflow-hidden flex flex-col active:scale-95 gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
                   <CreditCard className = "w-12 h-12 flex-shrink-0 fill-foreground"/>
@@ -369,7 +372,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               </PaymentButton>
               <PaymentButton selectedMethod="netbanking" totalAmount={((booking?.totalPrice || 0) + (booking?.totalPrice || 0)*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
                 <div 
-                className={cn("p-2 overflow-hidden flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+                className={cn("p-2 overflow-hidden flex flex-col active:scale-95 gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
                   <NetBanking className = {cn("w-12 h-12 flex-shrink-0 fill-foreground")}/>
@@ -380,8 +383,8 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                 </div>
               </PaymentButton>
               <div
-              // onClick={() =>}
-                className={cn("p-2 overflow-hidden  flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
+              onClick={() => setQRDialogOpen(true)}
+                className={cn("p-2 overflow-hidden cursor-pointer active:scale-95 flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
                   !isPayment ? 'h-0 p-0' : 'h-[110px]'
                 )}>
                   <QrCode className = "w-12 h-12 text-foreground"/>
