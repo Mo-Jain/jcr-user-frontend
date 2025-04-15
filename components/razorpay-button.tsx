@@ -4,7 +4,6 @@ import { useUserStore } from "@/lib/store";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { MdFormatListBulleted } from "react-icons/md";
 
 interface RazorpayOrder {
   id: string;

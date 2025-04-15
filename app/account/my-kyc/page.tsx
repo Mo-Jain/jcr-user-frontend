@@ -133,8 +133,8 @@ export default function KYCPage() {
           },
         });
         setCustomer(res.data.customer);
-        if(customer?.address){
-          const newFormData = parseAddressData(customer.address);
+        if(res.data.customer?.address){
+          const newFormData = parseAddressData(res.data.customer.address);
           if (newFormData) {
             setFormData(newFormData);
           }

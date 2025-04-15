@@ -24,12 +24,8 @@ import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogTitle,DialogFooter, DialogHeader, DialogOverlay } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import Loader from "@/components/loader";
-import PaymentButton from "@/components/razorpay-button";
 import { calculateCost, cn } from "@/lib/utils";
-import UPI from "@/public/upi-bhim.svg";
-import CreditCard from "@/public/credit-card.svg";
 import Loader2 from "@/components/loader2";
-import NetBanking from "@/public/netbanking.svg";
 import MailDialog from "@/components/mail-dialog";
 import { useDownloadPDF } from "@/hooks/useDownload";
 import QrDialog from "@/components/qr-dialog";
@@ -54,8 +50,6 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
   const [isOTPDialogOpen,setIsOTPDialogOpen] = useState(false);
   const [otp,setOtp] = useState("");
   const [isLoading,setIsLoading] = useState(false);
-  const [advancePayment,setAdvancePayment] = useState(booking.advancePayment || 0);
-  const [paymentMethod,setPaymentMethod] = useState<string>(booking.paymentMethod || "");
   const [isPayment,setIsPayment] = useState(false);
   const [copied, setCopied] = useState(false)
   const phoneNumber = "+91 79995 51582"
@@ -191,16 +185,11 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
 
  
   const totalAmount = calculateCost(booking.start,booking.end,booking.startTime,booking.endTime,booking.dailyRentalPrice);
-  const charge = booking?.totalPrice && (paymentMethod === "card" || paymentMethod === "netbanking") ? booking?.totalPrice*0.02 : 0;
-  const amountRemaining = booking.totalPrice ? (booking.totalPrice - (advancePayment || 0)) : 0;
+  const charge = booking?.totalPrice && (booking.paymentMethod === "card" || booking.paymentMethod === "netbanking") ? booking?.totalPrice*0.02 : 0;
+  const amountRemaining = booking.totalPrice ? (booking.totalPrice - (booking.advancePayment || 0)) : 0;
   
   const isSomeDetails = booking.odometerReading || booking.endodometerReading
   || (booking.documents && booking.documents.length >0) || booking.selfieUrl || (booking.carImages && booking.carImages.length > 0);
-
-  const onPayment = (method:string) => {
-    setAdvancePayment(booking.totalPrice || 0);
-    setPaymentMethod(method);
-  }
 
   const renderFileList = (type: "documents" | "photos" | "selfie") => {
     return (
@@ -267,7 +256,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
           <Loader/>
       </div>
       }
-      <QrDialog open={QRDialogOpen} setOpen={setQRDialogOpen} price={(booking?.totalPrice || 0) - advancePayment}/>
+      <QrDialog open={QRDialogOpen} setOpen={setQRDialogOpen} price={(booking?.totalPrice || 0) - (booking.advancePayment || 0)}/>
     <div id="printable-section" className="pt-[75px] print:text-black pdf-mode:text-black sm:pt-12 print:pt-2 pdf-mode:pt-0 relative z-0">
       <MailDialog mail={booking.customerMail} open={openMailDialog} setOpen={setOpenMailDialog} booking={booking}/>
       <div className="no-print:fixed pdf-mode:relative top-[75px] sm:top-12 pdf-mode:top-0 w-full left-0 flex pt-3 print:pt-2 pdf-mode:pt-0 bg-background pdf-mode:bg-transparent z-10 items-center justify-between print:justify-center pdf-mode:justify-center px-2 pb-2 border-b border-gray-300 dark:border-muted dark:text-white"> 
@@ -337,7 +326,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
       <div className="w-full h-[70px] no-print pdf-mode:hidden"/>
 
         <div className="w-full flex py-2 justify-center no-print pdf-mode:hidden">
-          {((booking?.totalPrice || 0) - advancePayment) > 0 && (bookingStatus === "Upcoming" || bookingStatus === "Ongoing")  &&
+          {((booking?.totalPrice || 0) - (booking.advancePayment || 0)) > 0 && (bookingStatus === "Upcoming" || bookingStatus === "Ongoing")  &&
           <div className=" flex flex-col items-center justify-center w-full">
             <Button 
             onClick={() => {
@@ -349,39 +338,6 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
             </Button> 
             <div className={cn("h-fit  overflow-hidden p-2 sm:px-4 flex gap-2 justify-center mx-auto flex-wrap ",
             )}>
-              <PaymentButton selectedMethod="upi" totalAmount={(booking?.totalPrice || 0) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
-                <div
-                className={cn("p-2 overflow-hidden  flex flex-col active:scale-95 gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
-                  !isPayment ? 'h-0 p-0' : 'h-[110px]'
-                )}>
-                  <UPI className = "w-12 h-12 fill-none flex-shrink-0 stroke-[10px] stroke-foreground"/>
-                  <p className="text-sm mb-3">UPI</p>
-                </div>
-              </PaymentButton>
-              <PaymentButton selectedMethod="card" totalAmount={((booking?.totalPrice || 0) + (booking?.totalPrice || 0)*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
-                <div 
-                className={cn("p-2 overflow-hidden flex flex-col active:scale-95 gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
-                  !isPayment ? 'h-0 p-0' : 'h-[110px]'
-                )}>
-                  <CreditCard className = "w-12 h-12 flex-shrink-0 fill-foreground"/>
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm ">Card</p>
-                    <span className="text-[10px] -mt-2">{"(Extra 2% fee)"}</span>
-                  </div>
-                </div>
-              </PaymentButton>
-              <PaymentButton selectedMethod="netbanking" totalAmount={((booking?.totalPrice || 0) + (booking?.totalPrice || 0)*0.02) - advancePayment} onSuccess={onPayment} bookingId={booking.id} setIsLoading={setIsLoading}>
-                <div 
-                className={cn("p-2 overflow-hidden flex flex-col active:scale-95 gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
-                  !isPayment ? 'h-0 p-0' : 'h-[110px]'
-                )}>
-                  <NetBanking className = {cn("w-12 h-12 flex-shrink-0 fill-foreground")}/>
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm ">Net banking</p>
-                    <span className="text-[10px] -mt-2">{"(Extra 2% fee)"}</span>
-                  </div>
-                </div>
-              </PaymentButton>
               <div
               onClick={() => setQRDialogOpen(true)}
                 className={cn("p-2 overflow-hidden cursor-pointer active:scale-95 flex flex-col gap-2 w-[105px] rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
@@ -481,7 +437,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
           <div>
             <p className="text-sm text-blue-500 mb-1">Payment Method</p>
             <div>
-                <p className={` `}>{paymentMethod}</p>
+                <p className={` `}>{booking.paymentMethod}</p>
             </div>
           </div>
         </div>
@@ -541,7 +497,7 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                 <span className="pdf-mode:mt-4">
                   <IndianRupee className="w-4 h-4  "/>
                 </span>
-                {(advancePayment).toFixed(2)}
+                {(booking.advancePayment || 0).toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between border-t pt-2 mt-2">
