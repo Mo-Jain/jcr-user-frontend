@@ -56,14 +56,6 @@ export default function AddressDialog({ isOpen, onClose, address, setAddress}: A
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!isValidPincode) {
-            toast({
-                description: `Please enter valid Pin or postal code.`,
-                variant: "destructive",
-                duration: 2000,
-            });
-            return;
-        }
         if (!validateForm()) {
             toast({
                 description: `Please fill all mandatory fields`,

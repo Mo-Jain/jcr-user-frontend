@@ -30,6 +30,8 @@ import { useRouter } from "next/navigation"
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useUserStore } from "@/lib/store";
+import AddressFields from "@/components/address/AddressFields";
+import Loader2 from "@/components/loader2";
 
 export interface Customer {
   id: number;
@@ -50,6 +52,15 @@ export interface Document {
 
 interface FormErrors {
   [key: string]: string;
+}
+
+interface AddressData {
+  buildingInfo: string;
+  streetInfo: string;
+  landmark: string;
+  pincode: string;
+  city: string;
+  state: string;
 }
 
 export default function KYCPage() {
@@ -78,9 +89,41 @@ export default function KYCPage() {
   const {kycStatus,setKycStatus} = useUserStore();
   const [errors, setErrors] = useState<FormErrors>({});
   const [contact,setContact] = useState<string>("");
-
+  const [isValidPincode, setIsValidPincode] = useState(false);
+  const [isPinCodeLoading,setIsPinCodeLoading] = useState(false);
+  const [formData, setFormData] = useState<AddressData>({
+                                          buildingInfo: '',
+                                          streetInfo: '',
+                                          landmark: '',
+                                          city: '',
+                                          state: '',
+                                          pincode: '',
+                                          });
 
   useEffect(() => {
+    function parseAddressData(add:string): AddressData | null {
+      const addressArray = add.split(", ");
+      
+      if (addressArray.length !== 6) {
+        console.error("Invalid address format. Expected exactly 6 elements.");
+        return null;
+      }
+      const regex = /^\d{6}$/;
+      const Obj = {
+        buildingInfo: addressArray[0] || '',
+        streetInfo: addressArray[1] || '',
+        landmark: addressArray[2] || '',
+        city: addressArray[3] || '',
+        state: addressArray[4] || '',
+        pincode:'',
+      };
+      const last = addressArray[addressArray.length-1]
+      if(regex.test(last)){
+        validatePincode(last);
+        Obj.pincode = last;
+      }
+      return Obj
+    }
     const fetchData = async () => {
       try {
         const res = await axios.get(`${BASE_URL}/api/v1/customer/me`, {
@@ -90,12 +133,20 @@ export default function KYCPage() {
           },
         });
         setCustomer(res.data.customer);
+        if(customer?.address){
+          const newFormData = parseAddressData(customer.address);
+          if (newFormData) {
+            setFormData(newFormData);
+          }
+        }
       } catch (error) {
         console.error(error);
       }
     };
     fetchData();
-  }, []);
+  }, [setCustomer,address,setFormData]);
+
+  
 
   const updateCustomer = useCallback(() => {
     if (customer) {
@@ -261,11 +312,54 @@ export default function KYCPage() {
     if (address === "" ) newErrors.address = "This field is mandatory";
     if(aadharFiles.length + aadharPreviews.length === 0) newErrors.aadharFiles = "documents are required";
     if(licenseFiles.length + licensePreviews.length === 0) newErrors.licenseFiles = "documents are required";
+    if (formData.buildingInfo === "") newErrors.buildingInfo = "This field is mandatory";
+    if (formData.streetInfo === "") newErrors.streetInfo = "This field is mandatory";
+    if (formData.landmark === "") newErrors.landmark = "This field is mandatory";
+    if (formData.pincode === "") newErrors.pincode = "This field is mandatory";
+    if (formData.city === "") newErrors.city = "This field is mandatory";
+    if (formData.state === "") newErrors.state = "This field is mandatory";
+    if (!isValidPincode) newErrors.pincode = "Please enter valid Pin or postal code.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const validatePincode = async (pincode: string) => {
+    if (pincode.length === 6) {
+      setIsPinCodeLoading(true);
+      try {
+        // This is a mock API call - in production, use a real Indian postal API
+        const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const data = await response.json();
+        
+        if (data[0].Status === 'Success') {
+          const postOffice = data[0].PostOffice[0];
+          setFormData(prev => ({
+            ...prev,
+            city: postOffice.District,
+            state: postOffice.State
+          }));
+          setIsValidPincode(true);
+          setErrors((prev) => ({ ...prev, pincode: "" }))
+        } else {
+          setIsValidPincode(false);
+          setErrors((prev) => ({ ...prev, pincode: "Please enter valid Pin or postal code." }))
+        }
+      } catch (error) {
+        console.error(error);
+        setIsValidPincode(false);
+        setErrors((prev) => ({ ...prev, pincode: "Please enter valid Pin or postal code." }))
+      } finally {
+        setIsPinCodeLoading(false);
+      }
+    } else {
+      setIsValidPincode(false);
+      setErrors((prev) => ({ ...prev, pincode: pincode ? 'Please enter valid Pin or postal code.' : '' }))
+    }
+  };
 
+  function concatenateAddressValues(): string {
+      return Object.values(formData).join(', ');
+  };
   // Submit form
   const handleSubmit = async() => {
     try{
@@ -353,12 +447,13 @@ export default function KYCPage() {
       }
       setProgress(100);
       setLoadingMessage("Updating details");
+      const newAddress = concatenateAddressValues();
       await axios.put(
       `${BASE_URL}/api/v1/customer/${customer.id}`,
       {
         name: customer.name,
         contact: contact !== "" ? contact : undefined,
-        address: address,
+        address: newAddress,
         email:email,
         documents: updatedDocuments.length > 0 ? updatedDocuments : undefined,
         deletedPhotos: deletedPhotos.length > 0 ? deletedPhotos : undefined,
@@ -371,6 +466,7 @@ export default function KYCPage() {
         },
       },
       );
+      setAddress(newAddress);
       if(resAadhar.length > 0) {
         const newAadharPreviews:{url:string,fileIndex:number}[] = [];
         if(customer.documents){
@@ -425,7 +521,7 @@ export default function KYCPage() {
   }
 
   return (
-    <div className={`min-h-screen p-4 md:p-8 bg-gray-200 dark:bg-background`}>
+    <div className={`min-h-screen p-4 md:p-8 bg-gray-200 dark:bg-background max-sm:pb-14`}>
       <div className="max-w-4xl mx-auto pt-20 sm:pt-16">
         <div className="flex justify-between items-center mb-8">
         <div className="flex items-center">
@@ -442,7 +538,7 @@ export default function KYCPage() {
               variant={"outline"}
               onClick={toggleEditable}
               disabled={kycStatus === "under review"}
-              className={cn("gap-2 hover:bg-gray-200 dark:hover:bg-zinc-700 bg-transparent",
+              className={cn("gap-2 hover:bg-gray-200 border-black/10 dark:border-white/10 dark:hover:bg-zinc-700 bg-transparent",
                 !isKYCDone && "bg-primary",
                 kycStatus === "under review" && "bg-primary bg-opacity-50 cursor-not-allowed hover:bg-opacity-50"
               )}
@@ -542,13 +638,26 @@ export default function KYCPage() {
                     {isEditable && address.length === 0 && <span className="text-sm text-red-400">*</span>}
 
                   </Label>
+                  {!isEditable ?
                   <Textarea
                     id="address"
                     value={address}
                     onChange={handleAddressChange}
-                    disabled={!isEditable}
+                    disabled={true}
                     className={`min-h-[100px] ${errors.address && "border border-red-500"}`}
                   />
+                  :
+                  <AddressFields
+                        isValidPincode={isValidPincode}
+                        setIsValidPincode={setIsValidPincode}
+                        errors={errors}
+                        setErrors={setErrors}
+                        formData={formData}
+                        setFormData={setFormData}
+                        validatePincode={validatePincode}
+                        isLoading={isPinCodeLoading}
+                      />
+                  }
                   {errors.address && (
                     <p className="text-red-500 text-sm">
                       {errors.address}
@@ -559,7 +668,7 @@ export default function KYCPage() {
             </Card>
 
             {/* Document Upload Card */}
-            <Card className="dark:bg-muted border-border">
+            <Card className="dark:bg-muted border-border ">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Document Verification</span>
@@ -698,13 +807,13 @@ export default function KYCPage() {
                   type="button"
                   variant={"outline"}
                   onClick={toggleEditable}
-                  className="gap-2 text-white bg-transparent w-full"
+                  className="gap-2 text-foreground bg-transparent w-full"
                 >
                   Cancel
                 </Button>}
 
                   <div className="w-full">
-                    {isLoading && (
+                    {!isLoading && (
                       <div className="w-full border-2 border-border rounded-lg relative">
                         <div
                           style={{ width: `${progress}%` }}
@@ -716,12 +825,7 @@ export default function KYCPage() {
                           <span className="text-black dark:text-white">
                            {loadingMessage}
                           </span>
-                          <div className="flex items-end py-1 h-full">
-                            <span className="sr-only">Loading...</span>
-                            <div className="h-1 w-1 bg-white mx-[2px] border-border rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                            <div className="h-1 w-1 bg-white mx-[2px] border-border rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                            <div className="h-1 w-1 bg-white mx-[2px] border-border rounded-full animate-bounce"></div>
-                          </div>
+                          <Loader2/>
                         </div>
                       </div>
                     )}
@@ -788,7 +892,7 @@ export default function KYCPage() {
             >
               Update
             </Button>
-            <Button variant="outline" className="bg-transparent max-sm:w-full" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" className="bg-transparent  max-sm:w-full" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
           </DialogFooter>

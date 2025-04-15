@@ -5,7 +5,7 @@ import { Label } from '../ui/label';
 
 // List of Indian states and union territories
 export const INDIAN_STATES = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chattisgarh',
   'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
   'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
   'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
@@ -29,14 +29,14 @@ interface FormErrors {
 interface AddressFieldsProps {
   isValidPincode: boolean;
   setIsValidPincode: React.Dispatch<React.SetStateAction<boolean>>;
-  contact:string;
-  name:string;
+  contact?:string;
+  name?:string;
   errors:FormErrors;
   setErrors:React.Dispatch<React.SetStateAction<FormErrors>>;
   formData:AddressData;
   setFormData:React.Dispatch<React.SetStateAction<AddressData>>;
-  setContact:React.Dispatch<React.SetStateAction<string>>;
-  setName:(value:string) => void;
+  setContact?:React.Dispatch<React.SetStateAction<string>>;
+  setName?:(value:string) => void;
   validatePincode:(pincode:string) => Promise<void>;
   isLoading:boolean;
 }
@@ -53,7 +53,7 @@ export default function AddressFields({
   setContact,
   setName,
   validatePincode,
-  isLoading
+  isLoading,
 }: AddressFieldsProps) {
     
     
@@ -76,22 +76,24 @@ export default function AddressFields({
   return (
     <div className="space-y-2">
         <div className="grid grid-cols-2 gap-2 sm:gap-4">
-            <div>
-                <Label className="block text-sm font-semibold text-gray-700 dark:text-gray-500 mb-1">
-                    Name
-                </Label>
-                <Input
-                type="text"
-                value={name}
-                onChange={(e) => {
-                    setName(e.target.value)
-                    setErrors((prev) => ({ ...prev, name: "" }))
-                }}
-                className="w-full p-2 border rounded-sm border-black/25 dark:border-white/25"
-                required
-                />
-            </div>
-
+            {name && setName &&
+              <div>
+                  <Label className="block text-sm font-semibold text-gray-700 dark:text-gray-500 mb-1">
+                      Name
+                  </Label>
+                  <Input
+                  type="text"
+                  value={name}
+                  onChange={(e) => {
+                      setName(e.target.value)
+                      setErrors((prev) => ({ ...prev, name: "" }))
+                  }}
+                  className="w-full p-2 border rounded-sm border-black/25 dark:border-white/25"
+                  required
+                  />
+              </div>
+            }
+            {contact && setContact &&
             <div>
                 <Label className="block text-sm font-semibold text-gray-700 dark:text-gray-500 mb-1">
                     Contact
@@ -113,6 +115,7 @@ export default function AddressFields({
                     <p className="text-red-500 text-sm mt-1">{errors.contact}</p>
                 )}
             </div>
+            }
         </div>
       <div>
         <Label className="block text-sm font-semibold text-gray-700 dark:text-gray-500 mb-1">
