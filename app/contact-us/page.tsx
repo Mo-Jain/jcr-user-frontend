@@ -102,18 +102,18 @@ export default function ContactPage() {
                 <div className="mt-8">
                   <h3 className="font-medium mb-3">Follow Us</h3>
                   <div className="flex space-x-4">
-                    <a href="#" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
+                    <a target="_blank" href="https://www.instagram.com/jain_car_rental" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
+                      <Instagram className="h-5 w-5 text-primary" />
+                    </a>
+                    {/* <a href="#" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
                       <Facebook className="h-5 w-5 text-primary" />
                     </a>
                     <a href="#" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
                       <Twitter className="h-5 w-5 text-primary" />
                     </a>
                     <a href="#" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
-                      <Instagram className="h-5 w-5 text-primary" />
-                    </a>
-                    <a href="#" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
                       <Linkedin className="h-5 w-5 text-primary" />
-                    </a>
+                    </a> */}
                   </div>
                 </div>
               </CardContent>
