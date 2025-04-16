@@ -29,16 +29,11 @@ import PDFDocument from "@/components/pdf-document";
 import { pdf } from "@react-pdf/renderer";
 import { sendEmailWithAttachment } from "@/app/actions/mail";
 import BackButton from "@/public/back-button.svg";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import PaymentButton from "@/components/razorpay-button";
-import UPI from "@/public/upi-bhim.svg";
-import CreditCard from "@/public/credit-card.svg";
-import Cash from "@/public/cash.svg";
-import NetBanking from "@/public/netbanking.svg";
-import Loader2 from "@/components/loader2";
-import { IndianRupee } from "lucide-react";
 import Redirect from "@/public/redirect.svg";
+import UpiQrCode from "@/components/upi-qr-code";
+import Loader from "@/components/loader";
 
 interface FormErrors {
   [key: string]: string;
@@ -92,6 +87,9 @@ export default function BookingStartClient({
   const [loadingMessage, setLoadingMessage] = useState("Please wait");
   const [customerMail, setCustomerMail] = useState(booking.customerMail || "");
   const [payDialogOpen,setPayDialogOpen] = useState(false);
+  const [paymentMethod,setPaymentMethod] = useState<string>("");
+  const [advancePayment,setAdvancePayment] = useState(booking.advancePayment || 0);
+  const [isPageLoading,setIsPageLoading] = useState(false);
 
   useEffect(() => {
     const cost = calculateCost(
@@ -118,6 +116,8 @@ export default function BookingStartClient({
     if (!odometerReading) newErrors.odometerReading = "This field is mandatory";
     if (!address) newErrors.address = "This field is mandatory";
     if (!customerMail) newErrors.mail = "This field is mandatory";
+    if(!paymentMethod) newErrors.paymentMethod = "This field is mandatory";
+    if(advancePayment === 0) newErrors.bookingAmountReceived = "Amount can't be zero";
     if (!dailyRentalPrice)
       newErrors.dailyRentalPrice = "This field is mandatory";
     if (!totalAmount) newErrors.totalAmount = "This field is mandatory";
@@ -262,14 +262,6 @@ export default function BookingStartClient({
     }
   }
 
-  const onPayment = () => {
-    setPayDialogOpen(false);
-    router.push('/');
-    toast({
-      title:"Booking started successfully"
-    })
-  }
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -302,8 +294,11 @@ export default function BookingStartClient({
           customerAddress: address,
           dailyRentalPrice,
           totalAmount,
+          bookingAmountReceived:advancePayment,
+          paymentMethod,
           notes,
           customerMail:customerMail,
+
         },
         {
           headers: {
@@ -399,7 +394,11 @@ export default function BookingStartClient({
       await sendingMail();
       setIsLoading(false);
       setProgress(100);
-      setPayDialogOpen(true);
+      if(paymentMethod === "upi"){
+        setPayDialogOpen(true);
+      }else {
+        router.push('/');
+      }
     } catch (error) {
       console.log(error);
       toast({
@@ -440,6 +439,11 @@ export default function BookingStartClient({
 
   return (
     <div className="max-w-4xl mx-auto pt-20 sm:pt-16">
+      {isPageLoading &&
+          <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/20 backdrop-blur-sm z-50">
+              <Loader/>
+          </div>
+          }
       <div className="fixed top-[82px] px-3 sm:top-14 pt-2 bg-background z-10 w-full left-0 flex items-center gap-2 mb-6">
         <div
           className="mr-2 rounded-md font-bold   cursor-pointer dark:hover:bg-gray-800 hover:bg-gray-200"
@@ -463,9 +467,8 @@ export default function BookingStartClient({
       <PaymentDialog 
         open={payDialogOpen} 
         setOpen={setPayDialogOpen}
-        onSuccess={onPayment}
-        bookingId={booking.id}
         amount={totalAmount}
+        setIsLoading={setIsPageLoading}
       />
       <div className="h-[60px] mb-4 w-full"/>
       <div className="space-y-6 max-sm:mb-4">
@@ -561,8 +564,7 @@ export default function BookingStartClient({
                 </div>
               </div>
             </div>
-            <div className="flex justify-between space-x-2 items-center">
-              <div className="w-full">
+            <div className="w-full">
                 <Label className="max-sm:text-xs" htmlFor="selectedCar">
                   Selected Car <span className="text-red-500">*</span>
                 </Label>
@@ -595,8 +597,45 @@ export default function BookingStartClient({
                     {errors.selectedCar}
                   </p>
                 )}
+          </div>
+            <div className="flex justify-between space-x-2 items-center">
+              <div className="w-full">
+                <Label className="max-sm:text-xs" htmlFor="paymentMethod">
+                  Payment Method <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={paymentMethod}
+                  onValueChange={(value) => {
+                    setPaymentMethod(value);
+                    setErrors((prev) => ({ ...prev, paymentMethod: "" }));
+                  }}
+                >
+                  <SelectTrigger
+                    id="paymentMethod"
+                    value={paymentMethod}
+                    className={inputClassName("paymentMethod")}
+                  >
+                    <SelectValue placeholder="Select Method" />
+                  </SelectTrigger>
+                  <SelectContent className="dark:border-zinc-700">
+                      <SelectItem value="upi">
+                        UPI
+                      </SelectItem>
+                      <SelectItem value="online">
+                        Online
+                      </SelectItem>
+                      <SelectItem value="cash">
+                        Cash
+                      </SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.paymentMethod && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.paymentMethod}
+                  </p>
+                )}
               </div>
-              <div>
+              <div className="w-full">
                 <Label className="max-sm:text-xs" htmlFor="securityDeposit">
                   Security Deposit <span className="text-red-500">*</span>
                 </Label>
@@ -689,8 +728,14 @@ export default function BookingStartClient({
                 <Input
                   id="bookingAmountReceived"
                   type="text"
-                  value={booking.advancePayment || 0}
-                  disabled
+                  value={advancePayment}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value)) {
+                      setAdvancePayment(Number(value));
+                    }
+                    setErrors((prev) => ({ ...prev, bookingAmountReceived: "" }));
+                  }}
                   className={cn(
                     inputClassName("bookingAmountReceived"),
                     "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
@@ -759,6 +804,7 @@ export default function BookingStartClient({
               />
             </div>
           </div>
+          
         </div>
 
         <div className="grid sm:grid-cols-3 grid-cols-1 gap-6">
@@ -865,7 +911,10 @@ export default function BookingStartClient({
           ) : (
             <>
               <Button
-                onClick={() => router.push("/booking/" + bookingId)}
+                onClick={() =>{
+                  router.push("/booking/" + bookingId);
+                  setIsPageLoading(true);
+                }}
                 className="bg-red-600 dark:bg-red-400 active:scale-95 sm:max-w-[200px] text-card text-white hover:bg-red-500 w-full"
               >
                 Cancel
@@ -875,7 +924,7 @@ export default function BookingStartClient({
                 disabled={isLoading}
                 className={`bg-blue-600 active:scale-95 sm:max-w-[200px] text-white hover:bg-opacity-80 w-full ${isLoading && "rounded-e-none cursor-not-allowed opacity-50"}`}
               >
-                <span>Pay & Proceed</span>
+                <span>{paymentMethod==="upi"?"Proceed & Pay":"Proceed"}</span>
               </Button>
             </>
           )}
@@ -887,162 +936,37 @@ export default function BookingStartClient({
   );
 }
 
-const PaymentDialog = ({open, setOpen,onSuccess,bookingId,amount}:{
+const PaymentDialog = ({open, setOpen,amount,setIsLoading}:{
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  onSuccess: () => void;
-  bookingId: string;
-  amount:number
+  amount:number,
+  setIsLoading:React.Dispatch<React.SetStateAction<boolean>>
 }) => {
-  const [selectedMethod, setSelectedMethod] = useState<"upi" | "card" | "netbanking" | "cash">();
-  const [totalAmount, setTotalAmount] = useState(amount);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const onCashPayment = async() => {
-    try{
-      await axios.post(`${BASE_URL}/api/v1/customer/booking-payment/${bookingId}`,{
-        paymentMethod: "cash",
-        advancePayment: totalAmount,
-        status:"Ongoing"
-      },{
-        headers: {
-          authorization: `Bearer ` + localStorage.getItem("token"),
-        }
-      });
-      setOpen(false);
-      setIsLoading(false);
-      onSuccess();
-    }
-    catch(error){
-      console.log(error);
-      setIsLoading(false);
-    }
-  }
-
+  const router = useRouter();
   return (
-  <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className=" max-sm:rounded-sm  bg-muted border-border p-2">
-          <DialogHeader className="items-start p-4">
-            <DialogTitle className="text-center mb-2">Checkout</DialogTitle>
-            <DialogDescription className="text-grey-500 mt-1 flex justify-center">
-              Choose the payment method
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-center w-full">Pay using</div>
-            <div className="w-full h-fit overflow-hidden sm:px-4 flex justify-between gap-1 mx-auto ">
-                <div 
-                onClick={() =>{
-                  setSelectedMethod("upi")
-                  setTotalAmount(amount)
-                }}
-                className={cn("py-2 sm:p-2 overflow-hidden cursor-pointer border-2 border-transparent flex flex-col gap-2 w-full rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
-                        selectedMethod === "upi" && "border-blue-500 text-blue-500"
-                )}>
-                  <UPI className = {cn("w-12 h-12 fill-none flex-shrink-0 stroke-[10px] stroke-foreground",
-                        selectedMethod === "upi" && "stroke-blue-500"
-                  )}/>
-                  <p className="text-xs sm:text-sm mb-3 font-medium">UPI</p>
-                </div>
-                <div 
-                onClick={() =>{
-                  setSelectedMethod("card")
-                  setTotalAmount(amount+amount*0.02)
-                }}
-                className={cn("py-2 sm:p-2 overflow-hidden cursor-pointer border-2 border-transparent flex flex-col gap-2 w-full rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
-                      selectedMethod === "card" && "border-blue-500 text-blue-500"
-                )}>
-                  <CreditCard className = {cn("w-12 h-12 flex-shrink-0 fill-foreground",
-                      selectedMethod === "card" && "fill-blue-500"
-                  )}/>
-                  <div className="flex flex-col gap-1">
-                    <p className="text-xs sm:text-sm font-medium">Card</p>
-                    <span className="text-[8px] sm:text-[10px] -mt-2">{"(Extra 2% fee)"}</span>
-                  </div>
-                </div>
-                <div 
-                onClick={() =>{
-                  setSelectedMethod("netbanking")
-                  setTotalAmount(amount+amount*0.02)
-                }}
-                className={cn("py-2 sm:p-2 overflow-hidden cursor-pointer border-2 border-transparent flex flex-col gap-2 w-full rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
-                    selectedMethod === "netbanking" && "border-blue-500 text-blue-500"
-                )}>
-                  <NetBanking className = {cn("w-12 h-12 flex-shrink-0 fill-foreground",
-                    selectedMethod === "netbanking" && "fill-blue-500"
-                  )}/>
-                  <div className="flex flex-col gap-1">
-                    <p className="text-xs sm:text-sm font-medium">Net banking</p>
-                    <span className="text-[8px] sm:text-[10px] -mt-2">{"(Extra 2% fee)"}</span>
-                  </div>
-                </div>
-              <div 
-              onClick={() =>{
-                setSelectedMethod("cash")
-                setTotalAmount(amount)
-              }}
-              className={cn("py-2 sm:p-2 overflow-hidden cursor-pointer border-2 border-transparent flex flex-col gap-2 w-full rounded-sm bg-gray-300 dark:bg-card items-center border-border transition-all duration-300 ease-in-out",
-                  selectedMethod === "cash" && "border-blue-500 text-blue-500"
-                )}>
-                <Cash className = {cn("w-12 h-12 fill-foreground flex-shrink-0",
-                  selectedMethod === "cash" && "fill-blue-500"
-                )}/>
-                <p className="text-xs sm:text-sm mb-3 font-medium">Cash</p>
+    <div>
+    <Dialog open={open}>
+      <DialogContent className="border-border max-sm:h-[80%] py-auto ">
+          <DialogHeader className="w-full">
+              <DialogTitle className="font-bold">
+                  Scan and Pay
+              </DialogTitle>
+              <DialogDescription>
+                  Scan below QR code to pay INR {amount} 
+              </DialogDescription>
+              <div className="flex flex-col justify-center items-center w-full">
+                <UpiQrCode upiId="9724669431@kotak811" name="Naveen Jain" amount={amount}/>
               </div>
-            </div>
-            {selectedMethod === "cash" &&
-            <div className="w-full text-sm flex justify-center">
-              <span>Please pay cash amount to owner</span>
-            </div>
-            }
-            {selectedMethod && 
-            <div 
-            onClick={() => setIsLoading(true)}
-            className="w-full flex justify-center">
-              <div className="w-fit h-fit">
-                {selectedMethod !== "cash" ?
-                  <PaymentButton
-                    selectedMethod={selectedMethod}
-                    totalAmount={totalAmount}
-                    onSuccess={onSuccess}
-                    bookingId={bookingId}
-                    disabled={isLoading}
-                    setIsLoading={setIsLoading}
-                    status="Ongoing"
-                    className="text-white p-2 bg-primary flex items-center justify-center gap-2 active:scale-95 hover:bg-opacity-80 rounded-sm text-sm font-medium w-full max-w-[200px]"
-                  >
-                    {isLoading ?
-                    <Loader2/>
-                    :
-                    <>
-                      Pay
-                      <span className="flex items-center">
-                        <IndianRupee className="w-3 h-3"/>
-                        {totalAmount}
-                      </span>
-                    </>
-                    }
-                  </PaymentButton>
-                  :
-                  <Button
-                    className="text-white p-2 bg-primary active:scale-95 hover:bg-opacity-80 rounded-sm w-full max-w-[200px]"
-                    onClick={onCashPayment}
-                  >
-                    {isLoading ?
-                    <Loader2/>
-                    :
-                    <>
-                      Pay
-                      <span className="flex items-center">
-                        <IndianRupee className="w-3 h-3"/>
-                        {totalAmount}
-                      </span>
-                    </>
-                    }
-                  </Button>
-                }
-                </div>
-            </div>}
-        </DialogContent>
-      </Dialog>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => {
+              setOpen(false);
+              router.push('/');
+              setIsLoading(true);
+            }}>Proceed</Button>
+          </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </div>
   )
 }

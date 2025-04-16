@@ -29,7 +29,7 @@
     --animate-down-right: downRight 2s ease-in-out infinite;
     --animate-down-left: downLeft 2s ease-in-out infinite;
     --pulse: pulse 2s ease-in-out infinite;
-    --bounceY: bounceY 1s ease-in-out alternate infinite;
+    --bounceY: bounceY 1s ease-in-out infinite;
 
     transition:
       background-color 0.1s ease-in-out,
