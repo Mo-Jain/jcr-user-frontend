@@ -6,9 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 import { useCallback, useEffect, useState } from "react";
 import { useLoginStore, useUserStore } from "@/lib/store";
-import Redirect from "./redirect";
 import Image from "next/image";
 import { useMediaQuery } from "react-responsive";
+import { cn } from "@/lib/utils";
 
 export function NavBar() {
   const [selectedTab, setSelectedTab] = useState("home");
@@ -56,7 +56,6 @@ export function NavBar() {
 
   return (
     <div className="relative no-print pdf-mode:hidden">
-      <Redirect />
       <nav className="fixed w-full max-sm:pt-[30px] border-border top-0 left-0 z-[99] py-1 flex items-center rounded-none cursor-normal bg-white/30 dark:bg-white/10 backdrop-blur-lg justify-between px-4">
         <div className="flex w-full transition-all duration-300">
           <div
@@ -79,6 +78,12 @@ export function NavBar() {
           style={{ fontFamily: "var(--font-xova), sans-serif" }} 
           className="py-2 flex items-center gap-2">
             <div
+                className={`px-2 hover:text-blue-700 max-sm:hidden dark:hover:text-blue-500 ${selectedTab == "home" ? "text-blue-700 border-b-blue-700 dark:text-blue-500 dark:border-b-blue-500" : ""} border-transparent transition-all border duration-300 border-y-4 p-1 cursor-pointer font-bold`}
+                onClick={() => router.push("/")}
+              >
+                Home
+            </div>
+            <div
               className="w-full font-bold select-none text-zinc-700 dark:text-gray-200 cursor-pointer hover:text-blue-700 hover:dark:text-blue-700"
               onClick={() =>{
                 setIsSignUp(true);
@@ -95,6 +100,17 @@ export function NavBar() {
               }}
             >
               Login
+            </div>
+            <div
+              className={cn("w-full whitespace-nowrap border-transparent transition-all border duration-300 border-y-4 p-1 max-sm:hidden font-bold select-none text-zinc-700 dark:text-gray-200 cursor-pointer hover:text-blue-500 hover:dark:text-blue-500",
+                selectedTab == "account" ? "text-blue-700 border-b-blue-700 dark:text-blue-500 dark:border-b-blue-500" : ""
+              )}
+              onClick={() => {
+                setIsSignUp(false);
+                router.push("/account")
+              }}
+            >
+              Account
             </div>
           </div>
         ) : (

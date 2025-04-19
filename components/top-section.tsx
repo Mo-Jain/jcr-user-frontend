@@ -111,7 +111,6 @@ export const TopSection = ({opacity}:{opacity:number}) => {
           
         <div className="container h-fit ">
           <div className=" ">
-          {name ? 
             <div className="py-8 pb-12 max-sm:my-6 max-sm:mt-16 flex flex-col items-center justify-center">
               <div className="relative z-0 w-fit bg-white/20 dark:bg-muted backdrop-blur-lg rounded-md px-5 py-3 sm:px-10 sm:py-6 flex flex-col items-center">
                 <h1
@@ -173,29 +172,6 @@ export const TopSection = ({opacity}:{opacity:number}) => {
                 </div>
               </div>
             </div>
-          :
-            <div className="mx-auto py-12 sm:py-16">
-              <h1
-                  className="sm:text-4xl text-center w-full text-2xl font-bold [text-shadow:_0_8px_8px_rgb(103_103_110_/_0.8)] text-gray-900 dark:text-gray-200 mb-4"
-                  style={{ fontFamily: "var(--font-alma), sans-serif" }}
-                >
-                  Drive Hassle-Free!
-                </h1>
-                <p 
-                style={{ fontFamily: "var(--font-alma), sans-serif" }}
-                className="sm:text-lg text-xs mb-6 text-center w-full text-gray-500 dark:text-gray-400">
-                  Skip the hassle—rent a car online and get it delivered to your door.
-                </p>
-                  <div className="flex justify-center items-center bg-transparent">
-                    <div
-                      onClick={() => router.push("/auth")}
-                      className="bg-white/20 hover:bg-white/40 dark:hover:bg-white/30 max-w-[220px] bg-opacity-20 backdrop-blur-md cursor-pointer shadow-xl max-sm:text-sm text-foreground px-3 sm:px-6 py-3 rounded-sm font-semibold transition duration-300"
-                    >
-                      Get Started
-                    </div>
-                  </div>
-                  </div>
-                }
             </div>
         </div>
       </section>

@@ -31,8 +31,15 @@ const Initiate = () => {
       try {
         setIsLoading(true);
         setIsServerLoading(true);
+        setIsCarLoading(true);
+        const res1 = await axios.get(`${BASE_URL}/api/v1/customer/car/all`, {
+          headers: {
+            authorization: `Bearer ` + localStorage.getItem("token"),
+          },
+        });
+        setCars(res1.data.cars);
+        setIsCarLoading(false);
         if(session){
-          setIsCarLoading(true);
           setName(session.user.name);
           setImageUrl(session.user.image);
           setUserId(Number(session.user.id));
@@ -47,13 +54,6 @@ const Initiate = () => {
           if(res.data.kycStatus === "pending"){
             setKycStatusFlag(true);
           }
-          const res1 = await axios.get(`${BASE_URL}/api/v1/customer/car/all`, {
-            headers: {
-              authorization: `Bearer ` + localStorage.getItem("token"),
-            },
-          });
-          setCars(res1.data.cars);
-          setIsCarLoading(false);
           const res2 = await axios.get(`${BASE_URL}/api/v1/customer/favorite-cars`, {
               headers: {
                 authorization: `Bearer ` + localStorage.getItem("token"),
@@ -74,11 +74,16 @@ const Initiate = () => {
 
   if(pathname.includes("/test")) return null;
 
+  // useEffect(() => {
+  //   console.log("isInitiateComplete",isInitiateComplete);
+  //   console.log("isServerLoading",isServerLoading);
+  //   console.log("isLoading",isLoading);
+  // }, [isInitiateComplete,isServerLoading,isLoading]);
 
   if(isInitiateComplete && isServerLoading && isLoading && (pathname==="/"|| pathname==="/auth")) {
     return <SkeletonPreLoader/>
   } 
-  else if (isLoading && !isInitiateComplete){
+  else if (!isInitiateComplete){
     return <SplashScreen/>
   }
   return <InitiateScreen/>;

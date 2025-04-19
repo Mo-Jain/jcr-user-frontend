@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { BASE_URL } from "@/lib/config";
 import { useSession } from "next-auth/react";
+import CarFeature from "@/components/car-feature";
 
 const smoothScrollTo = (targetY: number, duration: number = 300) => {
   const startY = window.scrollY;
@@ -133,6 +134,9 @@ export default function Home() {
         </div>
         <div className="relative z-0">
           <FavoriteSection/>
+        </div>
+        <div className="relative z-0">
+          <CarFeature/>
         </div>
       </main>
       <div className="bg-white text-xs  bg-opacity-40 dark:bg-opacity-20 backdrop-blur-lg flex flex-col items-center px-4 text-muted-foreground py-4">

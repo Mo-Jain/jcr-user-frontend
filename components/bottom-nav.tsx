@@ -8,6 +8,7 @@ import { useUserStore } from "@/lib/store";
 import HomeIcon from "@/public/home.svg";
 import BookingIcon from "@/public/online-booking.svg";
 import CarIcon from "@/public/car-search.svg";
+import UserIcon from "@/public/user.svg";
 
 type NavItem = {
   id: string;
@@ -86,12 +87,20 @@ export function BottomNav() {
             ))}
           </div>
         ) : (
-          <Link
-            href="/"
-            className={`flex flex-col py-2 items-center ${getTextClasses(selectedTab === "home")}`}
-          >
-            <HomeIcon className="h-8 w-8 fill-gray-500" />
-          </Link>
+          <div className="flex gap-4 items-center justify-center w-full">
+            <Link
+              href="/"
+              className={`flex flex-col py-2 items-center ${getIconClasses(selectedTab === "home")}`}
+            >
+              <HomeIcon className="h-8 w-8 fill-gray-500" />
+            </Link>
+            <Link
+              href="/account"
+              className={`flex flex-col py-2 stroke-[12px] items-center ${getIconClasses(selectedTab === "account")}`}
+            >
+              <UserIcon className="h-8 w-8 fill-gray-500" />
+            </Link>
+          </div>
         )}
       </nav>
     </div>

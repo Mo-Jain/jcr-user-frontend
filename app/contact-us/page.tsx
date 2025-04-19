@@ -13,7 +13,6 @@ export default function ContactPage() {
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
 
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
     setCopied(true)

@@ -37,40 +37,44 @@ export function CarCard({ car,flexlayout}: {
         setFavoriteCars([...favoriteCars,{...car,favorite:true}]);
       }
       setCars(cars.map(car => car.id === carId ? {...car,favorite:true} : car));
-      try{
-        await axios.post(
-          `${BASE_URL}/api/v1/customer/favorite-car/${carId}`,
-          {
-              
-          },
-          {
-              headers: {
-              "Content-type": "application/json",
-              authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-          },
-          );
-      }
-      catch(error){
-        console.log(error);
-        toast({description:"Something went wrong",variant:"destructive",duration:2000});
-        setFavoriteCars(favoriteCars.filter(car => car.id !== carId));
+      if(name){
+        try{
+          await axios.post(
+            `${BASE_URL}/api/v1/customer/favorite-car/${carId}`,
+            {
+                
+            },
+            {
+                headers: {
+                "Content-type": "application/json",
+                authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            },
+            );
+        }
+        catch(error){
+          console.log(error);
+          toast({description:"Something went wrong",variant:"destructive",duration:2000});
+          setFavoriteCars(favoriteCars.filter(car => car.id !== carId));
+        }
       }
     }
     else{
       setCars(cars.map(car => car.id === carId ? {...car,favorite:false} : car));
       setFavoriteCars(favoriteCars.filter(car => car.id !== carId));
-      try{
-        await axios.delete(`${BASE_URL}/api/v1/customer/favorite-car/${carId}`, {
-          headers: {
-            authorization: `Bearer ` + localStorage.getItem("token"),
-          },
-        });
-      }
-      catch(error){
-        console.log(error);
-        toast({description:"Something went wrong",variant:"destructive"});
-        setFavoriteCars(favoriteCars);
+      if(name){
+        try{
+          await axios.delete(`${BASE_URL}/api/v1/customer/favorite-car/${carId}`, {
+            headers: {
+              authorization: `Bearer ` + localStorage.getItem("token"),
+            },
+          });
+        }
+        catch(error){
+          console.log(error);
+          toast({description:"Something went wrong",variant:"destructive"});
+          setFavoriteCars(favoriteCars);
+        }
       }
     }
   };
@@ -78,7 +82,7 @@ export function CarCard({ car,flexlayout}: {
     e.preventDefault();
     e.stopPropagation();
     if(!name){
-      router.push("/login");
+      router.push("/auth");
       return;
     }
     router.push('/bookings/book-car/'+car.id);      
