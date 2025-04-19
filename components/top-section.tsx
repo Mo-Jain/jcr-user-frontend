@@ -30,8 +30,6 @@ const smoothScrollTo = (targetY: number, duration: number = 600) => {
 };
 
 export const TopSection = ({opacity}:{opacity:number}) => {
-  const { name } = useUserStore();
-  const router = useRouter();
   const [selectDate, setSelectDate] = useState<"start"|"end">("start");
   const [isOpen, setIsOpen] = useState(false);
   const isSmallScreen = useMediaQuery({ maxWidth: 640 });

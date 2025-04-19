@@ -3,9 +3,6 @@
 import { CarCard } from "./car-card";
 import Link from "next/link";
 import {  useCarStore, useFilteredCarStore, useSearchStore, useUserStore } from "@/lib/store";
-import CarIcon from "@/public/car-icon.svg";
-import Delivery from "@/public/delivery.svg";
-import CoinStack from "@/public/coin-stack.svg";
 import ArrowRight from "@/public/right_arrow.svg";
 import FlexLayoutCars from "./flex-layout-cars";
 import LoadingScreen from "./loading-screen";
