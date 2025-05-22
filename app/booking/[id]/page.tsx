@@ -43,6 +43,8 @@ export interface Booking {
   customerAddress?: string;
   paymentMethod?: string;
   odometerReading?: string;
+  fastrack?: number;
+  endfastrack?: number;
   endodometerReading?: string;
   notes?: string;
   selfieUrl?: string;

@@ -577,6 +577,12 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                   <span className="text-sm">{booking.odometerReading}</span>
               </div>
             )}
+            {booking.fastrack && (
+              <div>
+                <p className="text-sm text-blue-500">FasTag Amount </p>
+                  <span className="text-sm">{booking.fastrack}</span>
+              </div>
+            )}
             {bookingStatus !== "Upcoming" && booking.selfieUrl && (
               <div className="no-print pdf-mode:hidden">
                 <p className="text-xs sm:text-sm text-blue-500">
@@ -607,6 +613,21 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
                   <span className="text-sm">{booking.endodometerReading}</span>
               </div>
             )}
+            {booking.endfastrack && (
+              <div>
+                <p className="text-sm text-blue-500">FasTag end amount </p>
+                  <span className="text-sm">{booking.endfastrack}</span>
+              </div>
+            )}
+            {booking.fastrack &&
+              Number(booking.fastrack) > Number(booking.endfastrack) && (
+                <div>
+                  <p className="text-sm text-blue-500">FasTag used</p>
+                  <span className="text-sm">
+                    {Number(booking.fastrack) - Number(booking.endfastrack)}
+                  </span>
+                </div>
+              )}
             {booking.odometerReading &&
               Number(booking.endodometerReading) > Number(booking.odometerReading) && (
                 <div>
@@ -654,7 +675,6 @@ export function BookingDetailsClient({ booking }: BookingDetailsClientProps) {
               className="px-4 py-4 sm:min-w-[400px] max-sm:w-full active:scale-95 bg-blue-600 text-white  shadow-lg"
               onClick={() => {
                 setIsOTPDialogOpen(true);
-                
               }}
             >
               <span className="">Start Booking</span>

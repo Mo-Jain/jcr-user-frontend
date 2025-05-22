@@ -90,6 +90,7 @@ export default function BookingStartClient({
   const [paymentMethod,setPaymentMethod] = useState<string>("");
   const [advancePayment,setAdvancePayment] = useState(booking.advancePayment || 0);
   const [isPageLoading,setIsPageLoading] = useState(false);
+  const [fastrack,setFastrack] = useState<number>(booking.fastrack || 0);
 
   useEffect(() => {
     const cost = calculateCost(
@@ -124,6 +125,7 @@ export default function BookingStartClient({
     if (!termsAccepted)
       newErrors.terms = "You must accept the terms and conditions";
     if(customerMail === "") newErrors.mail = "This field is mandatory";
+    if(fastrack === 0) newErrors.fastrack = "This field is mandatory";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -298,7 +300,7 @@ export default function BookingStartClient({
           paymentMethod,
           notes,
           customerMail:customerMail,
-
+          fastrack
         },
         {
           headers: {
@@ -792,6 +794,27 @@ export default function BookingStartClient({
                   </p>
                 )}
               </div>
+            </div>
+            <div>
+              <Label className="max-sm:text-xs" htmlFor="notes">
+                FasTag Amount 
+              </Label>
+              <Input
+                  id="fastrack"
+                  type="text"
+                  value={fastrack}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value)) {
+                      setFastrack(Number(value));
+                    }
+                    setErrors((prev) => ({ ...prev, fastrack: "" }));
+                  }}
+                  className={cn(
+                    inputClassName("fastrack"),
+                    "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+                  )}
+                />
             </div>
             <div>
               <Label className="max-sm:text-xs" htmlFor="notes">
