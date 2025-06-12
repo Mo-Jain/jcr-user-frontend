@@ -48,7 +48,7 @@ A responsive and user-friendly web application for booking rental cars. Customer
 
 ## 🚀 Deployment
 
-> 🔗 Live Site: [https://jaincarrental.in)  
+> 🔗 Live Site: [https://jaincarrental.in] 
 
 To run locally:
 
