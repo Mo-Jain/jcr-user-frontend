@@ -25,7 +25,7 @@ export default function ContactPage() {
 
   const phoneNumber = "+91 79995 51582"
   const emailAddress = "jcrahmedabad@gmail.com"
-  const officeAddress = "Anant Sky, opp. PINK CITY, nr. Andh Kalyan Kendra, Ghanshyam Nagar, Ranip, Ahmedabad, Gujarat 382480, India"
+  const officeAddress = "Ashraya 9, G 104, Chamunda Nagar, New Ranip, Ahmedabad, Gujarat 382470 India"
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(officeAddress)}`
 
   return (
